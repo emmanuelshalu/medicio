@@ -1,0 +1,118 @@
+{% extends base_template %}
+{% load static %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4 me-5">
+        <h2>Edit Appointment</h2>
+        <a href="{% url 'view_appointment' appointment.id %}" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> Back to Details
+        </a>
+    </div>
+
+    {% if messages %}
+    <div class="messages mb-4">
+        {% for message in messages %}
+        <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="card">
+        <div class="card-body">
+            <form method="POST">
+                {% csrf_token %}
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label for="patient" class="form-label">Patient *</label>
+                        <select class="form-select" id="patient" name="patient" required>
+                            {% for patient in patients %}
+                            <option value="{{ patient.id }}" 
+                                    {% if patient.id == appointment.patient.id %}selected{% endif %}>
+                                {{ patient.patient_name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="doctor" class="form-label">Doctor *</label>
+                        <select class="form-select" id="doctor" name="doctor" required>
+                            {% for doctor in doctors %}
+                            <option value="{{ doctor.id }}" 
+                                    {% if doctor.id == appointment.doctor.id %}selected{% endif %}>
+                                Dr. {{ doctor.user.get_full_name }} ({{ doctor.specialty }})
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <label for="appointmentDate" class="form-label">Date *</label>
+                        <input type="date" class="form-control" id="appointmentDate" 
+                               name="appointment_date" 
+                               value="{{ appointment.appointment_date|date:'Y-m-d' }}" 
+                               required>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="appointmentTime" class="form-label">Time *</label>
+                        <input type="time" class="form-control" id="appointmentTime" 
+                               name="appointment_time" 
+                               value="{{ appointment.appointment_time|time:'H:i' }}" 
+                               required>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="status" class="form-label">Status *</label>
+                        <select class="form-select" id="status" name="status" required>
+                            {% for status in statuses %}
+                            <option value="{{ status }}" 
+                                    {% if status == appointment.status %}selected{% endif %}>
+                                {{ status }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-12">
+                        <label for="notes" class="form-label">Notes</label>
+                        <textarea class="form-control" id="notes" name="notes" 
+                                  rows="3">{{ appointment.notes }}</textarea>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-12">
+                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                        <a href="{% url 'view_appointment' appointment.id %}" class="btn btn-secondary">Cancel</a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+    // Add any additional JavaScript for form validation if needed
+    document.querySelector('form').addEventListener('submit', function(e) {
+        let isValid = true;
+        let requiredFields = this.querySelectorAll('[required]');
+        
+        requiredFields.forEach(field => {
+            if (!field.value) {
+                isValid = false;
+                field.classList.add('is-invalid');
+            } else {
+                field.classList.remove('is-invalid');
+            }
+        });
+    });
+</script>
+{% endblock %} 
+{% endblock %}

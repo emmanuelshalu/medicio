@@ -1,0 +1,161 @@
+{% extends 'hosp_admin/base_admin.html' %}
+{% load static %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">Manage Doctors</h1>
+    <div class="btn-toolbar mb-2 mb-md-0 me-5">
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addDoctorModal">
+            <i class="bi bi-plus"></i> Add New Doctor
+        </button>
+    </div>
+</div>
+
+<!-- Doctors Table -->
+<div class="card shadow mb-4">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-bordered" id="doctorsTable" width="100%" cellspacing="0">
+                <thead>
+                    <tr>
+                        <th>Doctor ID</th>
+                        <th>Name</th>
+                        <th>Specialty</th>
+                        <th>License Number</th>
+                        <th>Phone</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for doctor in doctors %}
+                    <tr>
+                        <td>{{ doctor.doctor_id }}</td>
+                        <td>Dr. {{ doctor.user.get_full_name }}</td>
+                        <td>{{ doctor.specialty.specialty_name }}</td>
+                        <td>{{ doctor.license_number }}</td>
+                        <td>{{ doctor.phone_number }}</td>
+                        <td>
+                            <span class="badge {% if doctor.user.is_active %}bg-success{% else %}bg-danger{% endif %}">
+                                {{ doctor.user.is_active|yesno:"Active,Inactive" }}
+                            </span>
+                        </td>
+                        <td>
+                            <button class="btn btn-sm btn-info" onclick="viewDoctor('{{ doctor.id }}')">
+                                <i class="bi bi-eye"></i>
+                            </button>
+                            <button class="btn btn-sm btn-primary" onclick="editDoctor('{{ doctor.id }}')">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <button class="btn btn-sm btn-danger" onclick="deleteDoctor('{{ doctor.id }}')">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Add Doctor Modal -->
+<div class="modal fade" id="addDoctorModal" tabindex="-1" aria-labelledby="addDoctorModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addDoctorModalLabel">Add New Doctor</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addDoctorForm" method="POST" action="{% url 'manage_doctors' %}" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="firstName" class="form-label">First Name</label>
+                            <input type="text" class="form-control" id="firstName" name="first_name" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="lastName" class="form-label">Last Name</label>
+                            <input type="text" class="form-control" id="lastName" name="last_name" required>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="email" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="email" name="email" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="specialty" class="form-label">Specialty</label>
+                            <select class="form-select" id="specialty" name="specialty" required>
+                                <option value="">Select Specialty</option>
+                                {% for specialty in specialties %}
+                                <option value="{{ specialty.id }}">{{ specialty.specialty_name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="licenseNumber" class="form-label">License Number</label>
+                            <input type="text" class="form-control" id="licenseNumber" name="license_number" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="phoneNumber" class="form-label">Phone Number</label>
+                            <input type="tel" class="form-control" id="phoneNumber" name="phone_number" 
+                                   pattern="\+?1?\d{9,15}" 
+                                   title="Phone number must be entered in the format: '+999999999'. Up to 15 digits allowed."
+                                   required>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <label for="address" class="form-label">Address</label>
+                            <textarea class="form-control" id="address" name="address" rows="3"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="profilePicture" class="form-label">Profile Picture</label>
+                            <input type="file" class="form-control" id="profilePicture" name="profile_picture" 
+                                   accept=".jpg,.jpeg,.png">
+                            <small class="text-muted">Allowed formats: JPG, JPEG, PNG</small>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="password" class="form-label">Password</label>
+                            <input type="password" class="form-control" id="password" name="password" required>
+                            <small class="text-muted">Initial password for the doctor's account</small>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="submit" form="addDoctorForm" class="btn btn-primary">Add Doctor</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+    function viewDoctor(doctorId) {
+        window.location.href = "{% url 'view_doctor' 0 %}".replace('0', doctorId);
+    }
+
+    function editDoctor(doctorId) {
+        window.location.href = "{% url 'edit_doctor' 0 %}".replace('0', doctorId);
+    }
+
+    function deleteDoctor(doctorId) {
+        if (confirm('Are you sure you want to delete this doctor? This action cannot be undone.')) {
+            window.location.href = "{% url 'delete_doctor' 0 %}".replace('0', doctorId);
+        }
+    }
+</script>
+{% endblock %}
+{% endblock %} 

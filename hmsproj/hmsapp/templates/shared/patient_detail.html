@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    {% if user.groups.filter(name='Doctors').exists or user.groups.filter(name='Staff').exists %}
+        <h2>Patient Details</h2>
+        
+        <div class="patient-info">
+            <!-- Basic patient info visible to both doctors and staff -->
+        </div>
+        
+        {% if user.groups.filter(name='Doctors').exists %}
+            <!-- Medical details only visible to doctors -->
+            <div class="medical-history">
+                {{ patient.medical_history }}
+            </div>
+            
+            {% if perms.hmsapp.add_treatment %}
+                <a href="{% url 'add_treatment' patient.id %}">Add Treatment</a>
+            {% endif %}
+        {% endif %}
+    {% else %}
+        <p>You don't have permission to view this page.</p>
+    {% endif %}
+</div>
+{% endblock %} 

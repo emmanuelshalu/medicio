@@ -1,0 +1,41 @@
+/* Dark mode styles */
+.staff-table {
+    background-color: #2d2d2d;
+    color: #ffffff;
+    border-collapse: collapse;
+    width: 100%;
+}
+
+.staff-table th {
+    background-color: #1a1a1a;
+    color: #ffffff;
+    padding: 12px;
+    border: 1px solid #404040;
+}
+
+.staff-table td {
+    padding: 10px;
+    border: 1px solid #404040;
+}
+
+.staff-table tr:nth-child(even) {
+    background-color: #363636;
+}
+
+.staff-table tr:hover {
+    background-color: #404040;
+}
+
+/* Dark mode container */
+.staff-container {
+    background-color: #1e1e1e;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Dark mode heading */
+.staff-heading {
+    color: #ffffff;
+    margin-bottom: 20px;
+} 

@@ -1,0 +1,329 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Staff Portal - HMS</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="{% static 'vendor/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet">
+    <link href="{% static 'vendor/bootstrap-icons/bootstrap-icons.css' %}" rel="stylesheet">
+    
+    <!-- Custom CSS -->
+    <style>
+        .sidebar {
+            min-height: 100vh;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .nav-link {
+            color: #333;
+            padding: 0.5rem 1rem;
+            transition: all 0.3s ease;
+        }
+        .nav-link:hover {
+            background-color: #f8f9fa;
+            color: #1977cc;
+        }
+        .nav-link.active {
+            background-color: #1977cc;
+            color: white;
+        }
+        .card {
+            border: none;
+            box-shadow: 0 0 15px rgba(0,0,0,0.05);
+            border-radius: 10px;
+        }
+        .card-header {
+            background-color: white;
+            border-bottom: 2px solid #f8f9fa;
+        }
+        .table th {
+            border-top: none;
+            font-weight: 600;
+        }
+        .btn-primary {
+            background-color: #1977cc;
+            border-color: #1977cc;
+        }
+        .btn-primary:hover {
+            background-color: #1565c0;
+            border-color: #1565c0;
+        }
+        .text-primary {
+            color: #1977cc !important;
+        }
+        .border-left-primary {
+            border-left: 4px solid #1977cc;
+        }
+        .border-left-success {
+            border-left: 4px solid #28a745;
+        }
+        .border-left-info {
+            border-left: 4px solid #17a2b8;
+        }
+        .border-left-warning {
+            border-left: 4px solid #ffc107;
+        }
+        /* New Alert Styles */
+        .messages {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            max-width: 350px;
+            width: 100%;
+        }
+        .alert {
+            margin-bottom: 10px;
+            border: none;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            opacity: 0;
+            transform: translateX(100%);
+            animation: slideIn 0.5s forwards, fadeOut 0.5s 4.5s forwards;
+            backdrop-filter: blur(10px);
+        }
+        .alert-success {
+            background-color: rgba(40, 167, 69, 0.95);
+            color: white;
+        }
+        .alert-info {
+            background-color: rgba(23, 162, 184, 0.95);
+            color: white;
+        }
+        .alert-warning {
+            background-color: rgba(255, 193, 7, 0.95);
+            color: #333;
+        }
+        .alert-danger {
+            background-color: rgba(220, 53, 69, 0.95);
+            color: white;
+        }
+        .alert .btn-close {
+            filter: brightness(0) invert(1);
+            opacity: 0.8;
+        }
+        .alert-warning .btn-close {
+            filter: none;
+            opacity: 0.5;
+        }
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        @keyframes fadeOut {
+            from {
+                opacity: 1;
+                transform: translateX(0);
+            }
+            to {
+                opacity: 0;
+                transform: translateX(100%);
+            }
+        }
+        /* Dark mode styles */
+        body.dark-mode {
+            background-color: #1a1a1a;
+            color: #ffffff;
+        }
+
+        body.dark-mode .sidebar {
+            background-color: #2d2d2d !important;
+        }
+
+        body.dark-mode .card {
+            background-color: #2d2d2d;
+            border-color: #404040;
+        }
+
+        body.dark-mode .nav-link {
+            color: #ffffff !important;
+        }
+
+        body.dark-mode .nav-link:hover {
+            background-color: #404040;
+        }
+
+        body.dark-mode .nav-link.active {
+            background-color: #1977cc;
+        }
+
+        body.dark-mode .table {
+            color: #ffffff;
+        }
+
+        body.dark-mode .modal-content {
+            background-color: #2d2d2d;
+            color: #ffffff;
+        }
+
+        /* Theme toggle button styles */
+        .theme-toggle .btn {
+            width: 40px;
+            height: 40px;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .theme-toggle .btn i {
+            font-size: 1.2rem;
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Theme Toggle Button -->
+    <div class="theme-toggle position-fixed" style="top: 20px; right: 20px; z-index: 1000;">
+        <button class="btn btn-outline-primary rounded-circle" id="themeToggle" onclick="toggleTheme()">
+            <i class="bi bi-moon-fill"></i>
+        </button>
+    </div>
+
+    {% if messages %}
+    <div class="messages">
+        {% for message in messages %}
+        <div class="alert alert-{% if message.tags %}{{ message.tags }}{% endif %} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <nav id="sidebar" class="col-md-3 col-lg-2 d-md-block bg-light sidebar">
+                <div class="position-sticky pt-3">
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'staff_dashboard' %}active{% endif %}" 
+                               href="{% url 'staff_dashboard' %}">
+                                <i class="bi bi-speedometer2"></i> Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'manage_appointments' %}active{% endif %}" 
+                               href="{% url 'manage_appointments' %}"> 
+                                <i class="bi bi-calendar-check"></i> Appointments
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'manage_patients' %}active{% endif %}" 
+                               href="{% url 'manage_patients' %}">
+                                <i class="bi bi-people"></i> Patients
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'manage_bills' %}active{% endif %}" 
+                               href="{% url 'manage_bills' %}">
+                                <i class="bi bi-cash"></i> Bills
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'manage_doctors' %}active{% endif %}" 
+                               href="{% url 'manage_doctors' %}">
+                                <i class="bi bi-person-badge"></i> Doctor Availability
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'manage_treatments' %}active{% endif %}" 
+                               href="{% url 'manage_treatments' %}">
+                                <i class="bi bi-journal-medical"></i> Treatments
+                            </a>
+                        </li>
+                        <li class="nav-item mt-3">
+                            <form method="post" action="{% url 'logout' %}">
+                                {% csrf_token %}
+                                <button type="submit" class="nav-link border-0 bg-transparent text-danger">
+                                    <i class="bi bi-box-arrow-right"></i> Logout
+                                </button>
+                            </form>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+
+            <!-- Main Content -->
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+                {% block content %}{% endblock %}
+            </main>
+        </div>
+    </div>
+
+    <!-- Bootstrap Bundle with Popper -->
+    <script src="{% static 'vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+    
+    <!-- Custom Scripts -->
+    <script>
+        // Auto-hide alerts after 5 seconds and handle manual dismissal
+        document.addEventListener('DOMContentLoaded', function() {
+            // Auto-hide alerts
+            setTimeout(function() {
+                var alerts = document.querySelectorAll('.alert');
+                alerts.forEach(function(alert) {
+                    var bsAlert = new bootstrap.Alert(alert);
+                    setTimeout(() => {
+                        bsAlert.close();
+                    }, 500); // Small delay to let the fadeOut animation complete
+                });
+            }, 5000);
+
+            // Handle manual dismissal with animation
+            document.querySelectorAll('.alert .btn-close').forEach(function(button) {
+                button.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const alert = this.closest('.alert');
+                    alert.style.animation = 'fadeOut 0.5s forwards';
+                    setTimeout(() => {
+                        var bsAlert = new bootstrap.Alert(alert);
+                        bsAlert.close();
+                    }, 500);
+                });
+            });
+        });
+
+        function toggleTheme() {
+            const body = document.body;
+            const themeToggle = document.getElementById('themeToggle');
+            const icon = themeToggle.querySelector('i');
+            
+            body.classList.toggle('dark-mode');
+            
+            // Update icon
+            if (body.classList.contains('dark-mode')) {
+                icon.classList.remove('bi-moon-fill');
+                icon.classList.add('bi-sun-fill');
+                localStorage.setItem('theme', 'dark');
+            } else {
+                icon.classList.remove('bi-sun-fill');
+                icon.classList.add('bi-moon-fill');
+                localStorage.setItem('theme', 'light');
+            }
+        }
+
+        // Check for saved theme preference
+        document.addEventListener('DOMContentLoaded', function() {
+            const savedTheme = localStorage.getItem('theme');
+            const themeToggle = document.getElementById('themeToggle');
+            const icon = themeToggle.querySelector('i');
+            
+            if (savedTheme === 'dark') {
+                document.body.classList.add('dark-mode');
+                icon.classList.remove('bi-moon-fill');
+                icon.classList.add('bi-sun-fill');
+            }
+        });
+    </script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html> 

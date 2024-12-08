@@ -1,0 +1,134 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block title %}Terms and Conditions - Medicio{% endblock %}
+
+{% block content %}
+<section class="terms-section section" style="padding: 120px 0 60px;">
+    <div class="container">
+        <div class="section-title" data-aos="fade-up">
+            <h2>Terms and Conditions</h2>
+            <p>Please read these terms and conditions carefully before using our medical services</p>
+        </div>
+
+        <div class="terms-content" data-aos="fade-up" data-aos-delay="100">
+            <div class="mb-5">
+                <h3>1. Acceptance of Terms</h3>
+                <p>By accessing and using the services of Medicio Hospital ("the Hospital"), you agree to be bound by these Terms and Conditions. If you do not agree to these terms, please do not use our services.</p>
+            </div>
+
+            <div class="mb-5">
+                <h3>2. Medical Services</h3>
+                <p>2.1. The Hospital provides medical services subject to the availability of facilities and medical professionals.</p>
+                <p>2.2. Emergency services are provided on a priority basis without guarantee of immediate attention.</p>
+                <p>2.3. Treatment outcomes cannot be guaranteed and depend on various factors including patient condition and compliance.</p>
+            </div>
+
+            <div class="mb-5">
+                <h3>3. Appointments and Cancellations</h3>
+                <p>3.1. Appointments must be scheduled in advance unless in emergency situations.</p>
+                <p>3.2. Cancellations should be made at least 24 hours before the scheduled appointment.</p>
+                <p>3.3. Repeated no-shows may result in scheduling restrictions.</p>
+            </div>
+
+            <div class="mb-5">
+                <h3>4. Payment and Insurance</h3>
+                <p>4.1. Patients are responsible for all charges not covered by insurance.</p>
+                <p>4.2. Payment is expected at the time of service unless prior arrangements have been made.</p>
+                <p>4.3. Insurance verification is the responsibility of the patient.</p>
+            </div>
+
+            <div class="mb-5">
+                <h3>5. Patient Rights and Responsibilities</h3>
+                <p>5.1. Patients have the right to:</p>
+                <ul>
+                    <li>Receive respectful and considerate care</li>
+                    <li>Be informed about their medical condition</li>
+                    <li>Participate in treatment decisions</li>
+                    <li>Privacy and confidentiality</li>
+                </ul>
+                <p>5.2. Patients are responsible for:</p>
+                <ul>
+                    <li>Providing accurate medical history</li>
+                    <li>Following treatment plans</li>
+                    <li>Respecting hospital policies</li>
+                    <li>Meeting financial obligations</li>
+                </ul>
+            </div>
+
+            <div class="mb-5">
+                <h3>6. Privacy and Confidentiality</h3>
+                <p>6.1. Patient information is protected under applicable privacy laws.</p>
+                <p>6.2. Information may be shared with other healthcare providers for treatment purposes.</p>
+                <p>6.3. Release of information requires patient authorization except as required by law.</p>
+            </div>
+
+            <div class="mb-5">
+                <h3>7. Hospital Policies</h3>
+                <p>7.1. Visitors must comply with visiting hours and policies.</p>
+                <p>7.2. Smoking is prohibited on hospital premises.</p>
+                <p>7.3. Photography and recording are restricted without authorization.</p>
+            </div>
+
+            <div class="mb-5">
+                <h3>8. Modifications to Terms</h3>
+                <p>8.1. The Hospital reserves the right to modify these terms at any time.</p>
+                <p>8.2. Changes will be effective immediately upon posting.</p>
+                <p>8.3. Continued use of services constitutes acceptance of modified terms.</p>
+            </div>
+
+            <div class="mb-5">
+                <h3>9. Governing Law</h3>
+                <p>These terms are governed by the laws of [Jurisdiction]. Any disputes shall be subject to the exclusive jurisdiction of the courts in [City/State].</p>
+            </div>
+
+            <div class="mb-5">
+                <h3>10. Contact Information</h3>
+                <p>For questions about these terms, please contact:</p>
+                <p>Legal Department<br>
+                Medicio Hospital<br>
+                Maleppally Rd, Thrikkakara<br>
+                Kakkanad, Kerala 682021<br>
+                Email: legal@medic.io</p>
+            </div>
+
+            <div class="mt-4">
+                <p class="text-muted"><small>Last updated: March 2024</small></p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+    .terms-section {
+        background-color: var(--body-bg);
+    }
+    
+    .terms-content {
+        max-width: 900px;
+        margin: 0 auto;
+    }
+
+    .terms-content h3 {
+        color: var(--header-color);
+        margin-bottom: 1rem;
+        font-size: 1.5rem;
+    }
+
+    .terms-content p, .terms-content li {
+        color: var(--body-quiet-color);
+        line-height: 1.6;
+        margin-bottom: 0.8rem;
+    }
+
+    .terms-content ul {
+        margin-left: 1.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .terms-content ul li {
+        margin-bottom: 0.5rem;
+    }
+</style>
+{% endblock %}

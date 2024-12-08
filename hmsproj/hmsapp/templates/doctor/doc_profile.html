@@ -1,0 +1,99 @@
+{% extends 'doctor/base_doctor.html' %}
+{% load static %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">Doctor Profile</h1>
+</div>
+
+<div class="row">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body text-center">
+                {% if doctor.profile_picture %}
+                    <img src="{{ doctor.profile_picture.url }}" alt="Profile Picture" class="img-fluid rounded-circle mb-3" style="width: 200px; height: 200px; object-fit: cover;">
+                {% else %}
+                    <img src="{% static 'img/default-doctor.png' %}" alt="Default Profile" class="img-fluid rounded-circle mb-3" style="width: 200px; height: 200px; object-fit: cover;">
+                {% endif %}
+                {% if user.userprofile.role.name in 'SUPER_ADMIN,ADMIN' %}
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="profile_picture" class="form-label">Update Profile Picture</label>
+                        <input type="file" name="profile_picture" id="profile_picture" class="form-control" accept="image/*">
+                    </div>
+                    <button type="submit" name="update_picture" class="btn btn-primary">Upload Picture</button>
+                </form>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-8">
+        <form method="post">
+            {% csrf_token %}
+            <div class="card">
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label">Doctor ID</label>
+                        <input type="text" class="form-control" value="{{ doctor.doctor_id }}" readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Name</label>
+                        <input type="text" class="form-control" value="{{ doctor.doc_name }}" readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Specialty</label>
+                        <input type="text" class="form-control" value="{{ doctor.specialty }}" readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Phone Number</label>
+                        <input type="tel" name="phone_number" class="form-control" value="{{ doctor.phone_number }}">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Address</label>
+                        <textarea name="address" class="form-control" rows="3">{{ doctor.address }}</textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Certifications</label>
+                        <textarea name="certifications" class="form-control" rows="3">{{ doctor.certifications }}</textarea>
+                    </div>
+
+                    <div class="card mt-4">
+                        <div class="card-header">
+                            <h5 class="mb-0">Google Calendar Integration</h5>
+                        </div>
+                        <div class="card-body">
+                            {% if not doctor.google_calendar_credentials %}
+                                <a href="{% url 'google_calendar_auth' %}" class="btn btn-primary">
+                                    <i class="fab fa-google"></i> Connect Google Calendar
+                                </a>
+                            {% else %}
+                                <div class="d-flex align-items-center p-3 rounded" style="background-color: #e8f5e9;">
+                                    <i class="fas fa-check-circle me-2 text-success"></i>
+                                    <span class="text-success">Google Calendar Connected</span>
+                                    <div class="ms-auto">
+                                        <a href="{% url 'google_calendar_auth' %}" class="btn btn-sm btn-outline-primary me-2">
+                                            <i class="fas fa-sync"></i> Change Account
+                                        </a>
+                                        <a href="{% url 'google_calendar_disconnect' %}" class="btn btn-sm btn-outline-danger">
+                                            <i class="fas fa-unlink"></i> Disconnect
+                                        </a>
+                                    </div>
+                                </div>
+                            {% endif %}
+                            
+                            <small class="form-text text-muted mt-2">
+                                When connected, your appointments will automatically sync to your Google Calendar.
+                                This helps you keep track of all appointments in one place.
+                            </small>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary mt-3">Update Profile</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %} 

@@ -1,0 +1,93 @@
+{% extends 'hosp_admin/base_admin.html' %}
+{% load static %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">Create New Bill</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <a href="{% url 'manage_bills' %}" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> Back to Bills
+        </a>
+    </div>
+</div>
+
+{% if messages %}
+<div class="messages mb-4">
+    {% for message in messages %}
+    <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<div class="card shadow mb-4">
+    <div class="card-body">
+        <form method="POST" action="{% url 'create_bill' %}">
+            {% csrf_token %}
+            
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label for="treatment" class="form-label">Select Treatment</label>
+                    <select class="form-select" id="treatment" name="treatment" required>
+                        <option value="">Choose treatment...</option>
+                        {% for treatment in treatments %}
+                        <option value="{{ treatment.id }}" 
+                                data-patient="{{ treatment.patient.id }}"
+                                data-patient-name="{{ treatment.patient.patient_name }}">
+                            {{ treatment.patient.patient_name }} - {{ treatment.created_at|date:"d/m/Y" }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="col-md-6">
+                    <label for="patient" class="form-label">Patient</label>
+                    <input type="text" class="form-control" id="patientDisplay" readonly>
+                    <input type="hidden" id="patient" name="patient">
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label for="amount" class="form-label">Amount</label>
+                    <div class="input-group">
+                        <span class="input-group-text">₹</span>
+                        <input type="number" class="form-control" id="amount" name="amount" 
+                               step="0.01" min="0" required>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <label for="due_date" class="form-label">Due Date</label>
+                    <input type="date" class="form-control" id="due_date" name="due_date" 
+                           min="{{ today|date:'Y-m-d' }}" required>
+                </div>
+            </div>
+
+            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-save"></i> Create Bill
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+document.getElementById('treatment').addEventListener('change', function() {
+    const selectedOption = this.options[this.selectedIndex];
+    const patientId = selectedOption.getAttribute('data-patient');
+    const patientName = selectedOption.getAttribute('data-patient-name');
+    
+    document.getElementById('patient').value = patientId;
+    document.getElementById('patientDisplay').value = patientName;
+});
+
+// Set minimum date for due_date to today
+document.getElementById('due_date').min = new Date().toISOString().split('T')[0];
+</script>
+{% endblock %}
+{% endblock %} 

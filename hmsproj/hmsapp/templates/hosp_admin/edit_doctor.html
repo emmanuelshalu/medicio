@@ -1,0 +1,107 @@
+{% extends 'hosp_admin/base_admin.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4 me-5">
+        <h2>Edit Doctor</h2>
+        <a href="{% url 'view_doctor' doctor.id %}" class="btn btn-secondary">Back to Details</a>
+    </div>
+
+    {% if messages %}
+    <div class="messages mb-4">
+        {% for message in messages %}
+        <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="card">
+        <div class="card-body">
+            <form method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label for="firstName" class="form-label">First Name</label>
+                        <input type="text" class="form-control" id="firstName" name="first_name" 
+                               value="{{ doctor.user.first_name }}" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="lastName" class="form-label">Last Name</label>
+                        <input type="text" class="form-control" id="lastName" name="last_name" 
+                               value="{{ doctor.user.last_name }}" required>
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label for="email" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="email" name="email" 
+                               value="{{ doctor.user.email }}" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="specialty" class="form-label">Specialty</label>
+                        <select class="form-select" id="specialty" name="specialty" required>
+                            {% for specialty in specialties %}
+                            <option value="{{ specialty.id }}" 
+                                    {% if specialty.id == doctor.specialty.id %}selected{% endif %}>
+                                {{ specialty.specialty_name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label for="licenseNumber" class="form-label">License Number</label>
+                        <input type="text" class="form-control" id="licenseNumber" name="license_number" 
+                               value="{{ doctor.license_number }}" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="phoneNumber" class="form-label">Phone Number</label>
+                        <input type="tel" class="form-control" id="phoneNumber" name="phone_number" 
+                               value="{{ doctor.phone_number }}"
+                               pattern="\+?1?\d{9,15}" 
+                               title="Phone number must be entered in the format: '+999999999'. Up to 15 digits allowed."
+                               required>
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-12">
+                        <label for="address" class="form-label">Address</label>
+                        <textarea class="form-control" id="address" name="address" 
+                                  rows="3">{{ doctor.address }}</textarea>
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label for="profilePicture" class="form-label">Profile Picture</label>
+                        <input type="file" class="form-control" id="profilePicture" name="profile_picture" 
+                               accept=".jpg,.jpeg,.png">
+                        <small class="text-muted">Leave empty to keep current picture</small>
+                        {% if doctor.profile_picture %}
+                        <div class="mt-2">
+                            <img src="{{ doctor.profile_picture.url }}" alt="Current profile picture" 
+                                 class="img-thumbnail" style="max-width: 100px;">
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-12">
+                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                        <a href="{% url 'view_doctor' doctor.id %}" class="btn btn-secondary">Cancel</a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %} 

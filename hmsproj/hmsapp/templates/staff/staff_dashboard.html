@@ -1,0 +1,103 @@
+{% extends 'staff/base_staff.html' %}
+
+{% block title %}Staff Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <h1 class="h2 mb-4">Dashboard</h1>
+
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card text-white bg-primary">
+                <div class="card-body">
+                    <h5 class="card-title">Today's Appointments</h5>
+                    <p class="card-text display-4">{{ todays_appointments.count }}</p>
+                    <a href="{% url 'manage_appointments' %}" class="text-white">Manage Appointments →</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-success">
+                <div class="card-body">
+                    <h5 class="card-title">Total Patients</h5>
+                    <p class="card-text display-4">{{ recent_patients.count }}</p>
+                    <a href="{% url 'manage_patients' %}" class="text-white">Manage Patients →</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-warning">
+                <div class="card-body">
+                    <h5 class="card-title">Pending Bills</h5>
+                    <p class="card-text display-4">{{ pending_bills_count }}</p>
+                    <a href="{% url 'manage_bills' %}" class="text-white">View Bills →</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-info">
+                <div class="card-body">
+                    <h5 class="card-title">Available Doctors</h5>
+                    <p class="card-text display-4">{{ available_doctors_count }}</p>
+                    <a href="{% url 'manage_doctors' %}" class="text-white">Check Availability →</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Today's Appointments</h5>
+                    <a href="{% url 'manage_appointments' %}" class="btn btn-sm btn-primary">New Appointment</a>
+                </div>
+                <div class="card-body">
+                    {% if todays_appointments %}
+                        <div class="list-group">
+                        {% for appointment in todays_appointments %}
+                            <a href="{% url 'view_appointment' appointment.id %}" class="list-group-item list-group-item-action">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h6 class="mb-1">{{ appointment.patient.patient_name }}</h6>
+                                    <small>{{ appointment.appointment_time }}</small>
+                                </div>
+                                <p class="mb-1">Dr. {{ appointment.doctor.user.get_full_name }}</p>
+                                <small class="text-muted">Status: {{ appointment.status }}</small>
+                            </a>
+                        {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted">No appointments scheduled for today.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Recent Patients</h5>
+                    <a href="{% url 'manage_patients' %}" class="btn btn-sm btn-primary">Register Patient</a>
+                </div>
+                <div class="card-body">
+                    {% if recent_patients %}
+                        <div class="list-group">
+                        {% for patient in recent_patients %}
+                            <a href="{% url 'view_patient' patient.id %}" class="list-group-item list-group-item-action">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h6 class="mb-1">{{ patient.patient_name }}</h6>
+                                    <small>ID: {{ patient.patient_id }}</small>
+                                </div>
+                                <small class="text-muted">Last visit: {{ patient.updated_at|date }}</small>
+                            </a>
+                        {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted">No recent patients.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

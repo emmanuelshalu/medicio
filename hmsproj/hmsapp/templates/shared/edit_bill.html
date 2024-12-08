@@ -1,0 +1,118 @@
+{% extends 'hosp_admin/base_admin.html' %}
+{% load static %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">Edit Bill #{{ bill.id }}</h1>
+    <div class="btn-toolbar mb-2 mb-md-0 me-5">
+        <a href="{% url 'view_bill' bill.id %}" class="btn btn-secondary me-2">
+            <i class="bi bi-arrow-left"></i> Back to Bill
+        </a>
+    </div>
+</div>
+
+{% if messages %}
+<div class="messages mb-4">
+    {% for message in messages %}
+    <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<div class="card shadow mb-4">
+    <div class="card-body">
+        <form method="POST">
+            {% csrf_token %}
+            
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label class="form-label">Patient</label>
+                    <input type="text" class="form-control" value="{{ bill.patient.patient_name }}" readonly>
+                </div>
+                
+                <div class="col-md-6">
+                    <label class="form-label">Treatment Date</label>
+                    <input type="text" class="form-control" value="{{ bill.treatment.created_at|date:'d/m/Y' }}" readonly>
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label for="amount" class="form-label">Amount</label>
+                    <div class="input-group">
+                        <span class="input-group-text">$</span>
+                        <input type="number" class="form-control" id="amount" name="amount" 
+                               value="{{ bill.amount }}" step="0.01" min="0" required
+                               {% if bill.paid_amount > 0 %}readonly{% endif %}>
+                    </div>
+                    {% if bill.paid_amount > 0 %}
+                    <small class="text-muted">Amount cannot be changed after payments have been recorded.</small>
+                    {% endif %}
+                </div>
+                
+                <div class="col-md-6">
+                    <label for="due_date" class="form-label">Due Date</label>
+                    <input type="date" class="form-control" id="due_date" name="due_date" 
+                           value="{{ bill.due_date|date:'Y-m-d' }}" required>
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label for="payment_status" class="form-label">Payment Status</label>
+                    <select class="form-select" id="payment_status" name="payment_status" required>
+                        {% for status, label in payment_status_choices %}
+                        <option value="{{ status }}" {% if bill.payment_status == status %}selected{% endif %}>
+                            {{ label }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-save"></i> Save Changes
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Disable payment status options based on paid amount
+    const paidAmount = parseFloat(document.getElementById('paid_amount').textContent);
+    const totalAmount = parseFloat(document.getElementById('total_amount').textContent);
+    const statusSelect = document.getElementById('payment_status');
+    
+    if (paidAmount === 0) {
+        // Remove PAID and PARTIALLY_PAID options if no payment
+        Array.from(statusSelect.options).forEach(option => {
+            if (['PAID', 'PARTIALLY_PAID'].includes(option.value)) {
+                option.disabled = true;
+            }
+        });
+    } else if (paidAmount === totalAmount) {
+        // Only allow PAID status if fully paid
+        Array.from(statusSelect.options).forEach(option => {
+            if (option.value !== 'PAID') {
+                option.disabled = true;
+            }
+        });
+    } else {
+        // Only allow PARTIALLY_PAID or OVERDUE if partially paid
+        Array.from(statusSelect.options).forEach(option => {
+            if (!['PARTIALLY_PAID', 'OVERDUE'].includes(option.value)) {
+                option.disabled = true;
+            }
+        });
+    }
+});
+</script>
+{% endblock %}
+{% endblock %}

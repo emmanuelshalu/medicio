@@ -1,0 +1,74 @@
+{% extends 'hosp_admin/base_admin.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-md-4 mt-5">
+            <div class="card">
+                <div class="card-body text-center">
+                    {% if doctor.profile_picture %}
+                        <img src="{{ doctor.profile_picture.url }}" class="rounded-circle img-fluid mb-3" style="max-width: 150px;">
+                    {% else %}
+                        <img src="{% static 'images/default-profile.png' %}" class="rounded-circle img-fluid mb-3" style="max-width: 150px;">
+                    {% endif %}
+                    <h4 class="card-title">Dr. {{ doctor.user.get_full_name }}</h4>
+                    <p class="text-muted">{{ doctor.specialty.specialty_name }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-8 mt-5">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Doctor Information</h5>
+                    <div class="row mb-3">
+                        <div class="col-sm-3">
+                            <h6 class="mb-0">Doctor ID</h6>
+                        </div>
+                        <div class="col-sm-9 text-secondary">
+                            {{ doctor.doctor_id }}
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-sm-3">
+                            <h6 class="mb-0">Email</h6>
+                        </div>
+                        <div class="col-sm-9 text-secondary">
+                            {{ doctor.user.email }}
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-sm-3">
+                            <h6 class="mb-0">Phone</h6>
+                        </div>
+                        <div class="col-sm-9 text-secondary">
+                            {{ doctor.phone_number }}
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-sm-3">
+                            <h6 class="mb-0">License Number</h6>
+                        </div>
+                        <div class="col-sm-9 text-secondary">
+                            {{ doctor.license_number }}
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-sm-3">
+                            <h6 class="mb-0">Address</h6>
+                        </div>
+                        <div class="col-sm-9 text-secondary">
+                            {{ doctor.address }}
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <a class="btn btn-primary" href="{% url 'manage_doctors' %}">Back to List</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

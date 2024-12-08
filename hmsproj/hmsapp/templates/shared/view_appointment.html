@@ -1,0 +1,100 @@
+{% extends base_template %}
+{% load static %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4 me-5">
+        <h2>Appointment Details</h2>
+        <div>
+            <a href="{% url 'edit_appointment' appointment.id %}" class="btn btn-primary">
+                <i class="bi bi-pencil"></i> Edit Appointment
+            </a>
+            <a href="{% url 'manage_appointments' %}" class="btn btn-secondary">
+                <i class="bi bi-arrow-left"></i> Back to List
+            </a>
+        </div>
+    </div>
+
+    {% if messages %}
+    <div class="messages mb-4">
+        {% for message in messages %}
+        <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="card">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5 class="card-title">Appointment Information</h5>
+                    <p><strong>Appointment ID:</strong> {{ appointment.appointment_id }}</p>
+                    <p><strong>Date:</strong> {{ appointment.appointment_date }}</p>
+                    <p><strong>Time:</strong> {{ appointment.appointment_time }}</p>
+                    <p><strong>Status:</strong> 
+                        <span class="badge {% if appointment.status == 'SCHEDULED' %}bg-warning
+                                       {% elif appointment.status == 'COMPLETED' %}bg-success
+                                       {% elif appointment.status == 'CANCELLED' %}bg-danger
+                                       {% else %}bg-secondary{% endif %}">
+                            {{ appointment.status }}
+                        </span>
+                    </p>
+                </div>
+                <div class="col-md-6">
+                    <h5 class="card-title">Notes</h5>
+                    <p>{{ appointment.notes|default:"No notes available." }}</p>
+                </div>
+            </div>
+
+            <hr>
+
+            <div class="row mt-4">
+                <div class="col-md-6">
+                    <h5 class="card-title">Patient Information</h5>
+                    <p><strong>Name:</strong> {{ appointment.patient.patient_name }}</p>
+                    <p><strong>Phone:</strong> {{ appointment.patient.phone_number }}</p>
+                    <p><strong>Email:</strong> {{ appointment.patient.user.email }}</p>
+                </div>
+                <div class="col-md-6">
+                    <h5 class="card-title">Doctor Information</h5>
+                    <p><strong>Name:</strong> Dr. {{ appointment.doctor.user.get_full_name }}</p>
+                    <p><strong>Specialty:</strong> {{ appointment.doctor.specialty }}</p>
+                    <p><strong>Email:</strong> {{ appointment.doctor.user.email }}</p>
+                </div>
+            </div>
+
+            {% if appointment.status == 'SCHEDULED' %}
+            <div class="row mt-4">
+                <div class="col-12">
+                    <button class="btn btn-success" onclick="completeAppointment('{{ appointment.id }}')">
+                        <i class="bi bi-check-circle"></i> Mark as Completed
+                    </button>
+                    <button class="btn btn-danger" onclick="cancelAppointment('{{ appointment.id }}')">
+                        <i class="bi bi-x-circle"></i> Cancel Appointment
+                    </button>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+    function completeAppointment(appointmentId) {
+        if (confirm('Are you sure you want to mark this appointment as completed?')) {
+            // Add completion logic here
+        }
+    }
+
+    function cancelAppointment(appointmentId) {
+        if (confirm('Are you sure you want to cancel this appointment?')) {
+            window.location.href = "{% url 'delete_appointment' 0 %}".replace('0', appointmentId);
+        }
+    }
+</script>
+{% endblock %}
+{% endblock %} 

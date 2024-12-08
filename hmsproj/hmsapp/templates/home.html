@@ -1,0 +1,923 @@
+{% extends 'base.html' %}
+{% load static %}
+<link rel="icon" type="image/x-icon" href="{% static 'img/favicon.ico' %}">
+{% block content %}
+  <main class="main">
+
+    <!-- Hero Section -->
+    <section id="hero" class="hero section">
+
+      <div id="hero-carousel" class="carousel slide carousel-fade" data-bs-ride="carousel" data-bs-interval="5000">
+
+        <div class="carousel-item active">
+          <img src="{% static 'img/hero-carousel/hero-carousel-1.jpg' %}" alt="hero-carousel-1.jpg">
+          <div class="container">
+            <h2>Welcome to Medicio</h2>
+            <p>Experience world-class healthcare at Medicio, where cutting-edge technology meets compassionate care. Our team of renowned specialists and state-of-the-art facilities ensure you receive the highest standard of medical treatment in a warm, patient-centered environment.</p>
+            <a href="#about" class="btn-get-started">Read More</a>
+          </div>
+        </div><!-- End Carousel Item -->
+
+        <div class="carousel-item">
+          <img src="{% static 'img/hero-carousel/hero-carousel-2.jpg' %}" alt="hero-carousel-2.jpg">
+          <div class="container">
+            <h2>Excellence in Dental Care</h2>
+            <p>Discover comprehensive dental solutions at our state-of-the-art dental facility. From routine cleanings to advanced cosmetic procedures, our experienced dentists combine precision technology with gentle care to give you the confident smile you deserve. We make dental visits something to smile about.</p>
+            <a href="#about" class="btn-get-started">Read More</a>
+          </div>
+        </div><!-- End Carousel Item -->
+
+        <div class="carousel-item">
+          <img src="{% static 'img/hero-carousel/hero-carousel-3.jpg' %}" alt="hero-carousel-3.jpg">
+          <div class="container">
+            <h2>Advanced Surgical Excellence</h2>
+            <p>Trust your health to our expert surgical team, equipped with the latest robotic and minimally invasive technologies. Our board-certified surgeons perform thousands of successful procedures annually, offering innovative surgical solutions with faster recovery times and exceptional outcomes. Your journey to better health starts here.</p>
+            <a href="#about" class="btn-get-started">Read More</a>
+          </div>
+        </div><!-- End Carousel Item -->
+
+        <a class="carousel-control-prev" href="#hero-carousel" role="button" data-bs-slide="prev">
+          <span class="carousel-control-prev-icon bi bi-chevron-left" aria-hidden="true"></span>
+        </a>
+
+        <a class="carousel-control-next" href="#hero-carousel" role="button" data-bs-slide="next">
+          <span class="carousel-control-next-icon bi bi-chevron-right" aria-hidden="true"></span>
+        </a>
+
+        <ol class="carousel-indicators"></ol>
+
+      </div>
+
+    </section><!-- /Hero Section -->
+
+    <!-- Featured Services Section -->
+    <section id="featured-services" class="featured-services section">
+
+      <div class="container">
+
+        <div class="row gy-4">
+
+          <div class="col-xl-3 col-md-6 d-flex" data-aos="fade-up" data-aos-delay="100">
+            <div class="service-item position-relative">
+              <div class="icon"><i class="fas fa-heartbeat icon"></i></div>
+              <h4><a href="" class="stretched-link">Cardiac Care</a></h4>
+              <p>Advanced cardiovascular treatments with state-of-the-art cardiac monitoring and intervention facilities for comprehensive heart care</p>
+            </div>
+          </div><!-- End Service Item -->
+
+          <div class="col-xl-3 col-md-6 d-flex" data-aos="fade-up" data-aos-delay="200">
+            <div class="service-item position-relative">
+              <div class="icon"><i class="fas fa-pills icon"></i></div>
+              <h4><a href="" class="stretched-link">Pharmacy Services</a></h4>
+              <p>24/7 pharmaceutical care with specialized medication management and personalized patient counseling services</p>
+            </div>
+          </div><!-- End Service Item -->
+
+          <div class="col-xl-3 col-md-6 d-flex" data-aos="fade-up" data-aos-delay="300">
+            <div class="service-item position-relative">
+              <div class="icon"><i class="fas fa-thermometer icon"></i></div>
+              <h4><a href="" class="stretched-link">Emergency Care</a></h4>
+              <p>Round-the-clock emergency medical services with rapid response teams and advanced trauma care facilities</p>
+            </div>
+          </div><!-- End Service Item -->
+
+          <div class="col-xl-3 col-md-6 d-flex" data-aos="fade-up" data-aos-delay="400">
+            <div class="service-item position-relative">
+              <div class="icon"><i class="fas fa-dna icon"></i></div>
+              <h4><a href="" class="stretched-link">Genetic Testing</a></h4>
+              <p>Cutting-edge genetic diagnostics and counseling services for personalized treatment planning and preventive care</p>
+            </div>
+          </div><!-- End Service Item -->
+
+        </div>
+
+      </div>
+
+    </section><!-- /Featured Services Section -->
+
+    <!-- Call To Action Section -->
+    <section id="call-to-action" class="call-to-action section accent-background">
+
+      <div class="container">
+        <div class="row justify-content-center" data-aos="zoom-in" data-aos-delay="100">
+          <div class="col-xl-10">
+            <div class="text-center">
+              <h3>In an emergency? Need help now?</h3>
+              <p>Don't hesitate to reach out to us in case of an emergency. Our dedicated team is available 24/7 to provide immediate assistance and ensure prompt medical attention.</p>
+              <a class="cta-btn" style="font-size: larger; font-weight: bold;">Call Now @ +1 5589 5589 101</a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </section><!-- /Call To Action Section -->
+
+    <!-- About Section -->
+    <section id="about" class="about section">
+
+      <!-- Section Title -->
+      <div class="container section-title" data-aos="fade-up">
+        <h2>About Us<br></h2>
+        <p>Pioneering Healthcare Excellence Since 1985: Home to the Renowned Siedman Cancer Center and a Legacy of Compassionate, Innovative Medical Care</p>
+      </div><!-- End Section Title -->
+
+      <div class="container">
+
+        <div class="row gy-4">
+          <div class="col-lg-6 position-relative align-self-start" data-aos="fade-up" data-aos-delay="100">
+            <img src="{% static 'img/about.jpg' %}" class="img-fluid" alt="about.jpg">
+            <a href="https://www.youtube.com/watch?v=zHU0gLW_XVw&t=1s" class="glightbox pulsating-play-btn"></a>
+          </div>
+          <div class="col-lg-6 content" data-aos="fade-up" data-aos-delay="200">
+            <h3>Leading the Future of Healthcare with Innovation, Research, and Compassionate Care</h3>
+            <p class="fst-italic">
+              At Medicio, we combine over three decades of medical excellence with groundbreaking research and personalized patient care. Our flagship Siedman Cancer Center stands as a beacon of hope and healing for patients worldwide.
+            </p>
+            <ul>
+              <li><i class="bi bi-check2-all"></i> <span>Internationally recognized Siedman Cancer Center, pioneering breakthrough treatments and conducting vital clinical trials.</span></li>
+              <li><i class="bi bi-check2-all"></i> <span>State-of-the-art medical facilities featuring advanced diagnostic imaging and robotic surgical systems.</span></li>
+              <li><i class="bi bi-check2-all"></i> <span>Multidisciplinary team of over 200 specialists collaborating to provide comprehensive, patient-centered treatment plans with exceptional outcomes.</span></li>
+            </ul>
+            <p>
+              Our commitment extends beyond treatment to groundbreaking research, medical education, and community outreach programs. The Siedman Cancer Center's innovative approach combines cutting-edge therapies with holistic support services, ensuring every patient receives the most advanced care with genuine compassion and dignity.
+            </p>
+          </div>
+        </div>
+
+      </div>
+
+    </section><!-- /About Section -->
+
+    <!-- Stats Section -->
+    <section id="stats" class="stats section">
+
+      <div class="container" data-aos="fade-up" data-aos-delay="100">
+
+        <div class="row gy-4">
+
+          <div class="col-lg-3 col-md-6">
+            <div class="stats-item d-flex align-items-center w-100 h-100">
+              <i class="fas fa-user-md flex-shrink-0"></i>
+              <div>
+                <span data-purecounter-start="0" data-purecounter-end="25" data-purecounter-duration="1" class="purecounter"></span>
+                <p>Doctors</p>
+              </div>
+            </div>
+          </div><!-- End Stats Item -->
+
+          <div class="col-lg-3 col-md-6">
+            <div class="stats-item d-flex align-items-center w-100 h-100">
+              <i class="far fa-hospital flex-shrink-0"></i>
+              <div>
+                <span data-purecounter-start="0" data-purecounter-end="15" data-purecounter-duration="1" class="purecounter"></span>
+                <p>Departments</p>
+              </div>
+            </div>
+          </div><!-- End Stats Item -->
+
+          <div class="col-lg-3 col-md-6">
+            <div class="stats-item d-flex align-items-center w-100 h-100">
+              <i class="fas fa-flask flex-shrink-0"></i>
+              <div>
+                <span data-purecounter-start="0" data-purecounter-end="8" data-purecounter-duration="1" class="purecounter"></span>
+                <p>Research Labs</p>
+              </div>
+            </div>
+          </div><!-- End Stats Item -->
+
+          <div class="col-lg-3 col-md-6">
+            <div class="stats-item d-flex align-items-center w-100 h-100">
+              <i class="fas fa-award flex-shrink-0"></i>
+              <div>
+                <span data-purecounter-start="0" data-purecounter-end="150" data-purecounter-duration="1" class="purecounter"></span>
+                <p>Awards</p>
+              </div>
+            </div>
+          </div><!-- End Stats Item -->
+
+        </div>
+
+      </div>
+
+    </section><!-- /Stats Section -->
+
+    <!-- Features Section -->
+    <section id="features" class="features section">
+
+      <div class="container">
+
+        <div class="row justify-content-around gy-4">
+          <div class="features-image col-lg-6" data-aos="fade-up" data-aos-delay="100"><img src="{% static 'img/features.jpg' %}" alt="features.jpg"></div>
+
+          <div class="col-lg-5 d-flex flex-column justify-content-center" data-aos="fade-up" data-aos-delay="200">
+            <h3>Research Excellence: Advancing Medicine Through Discovery</h3>
+            <p>Our research institutes represent the forefront of medical innovation, where groundbreaking discoveries transform into life-changing treatments. The Siedman Cancer Center, alongside our specialized research facilities, conducts over 500 clinical studies annually, making us a leading force in medical advancement and patient care excellence.</p>
+
+            <div class="icon-box d-flex position-relative" data-aos="fade-up" data-aos-delay="300">
+              <i class="fa-solid fa-hand-holding-medical flex-shrink-0"></i>
+              <div>
+                <h4><a href="" class="stretched-link">Clinical Trials Program</a></h4>
+                <p>Leading over 200 active clinical trials annually, offering patients access to breakthrough treatments and revolutionary therapies before they become widely available.</p>
+              </div>
+            </div><!-- End Icon Box -->
+
+            <div class="icon-box d-flex position-relative" data-aos="fade-up" data-aos-delay="400">
+              <i class="fa-solid fa-suitcase-medical flex-shrink-0"></i>
+              <div>
+                <h4><a href="" class="stretched-link">Biomedical Research</a></h4>
+                <p>Our state-of-the-art laboratories focus on genomic medicine, immunotherapy, and personalized treatment approaches, particularly in cancer research and rare diseases.</p>
+              </div>
+            </div><!-- End Icon Box -->
+
+            <div class="icon-box d-flex position-relative" data-aos="fade-up" data-aos-delay="500">
+              <i class="fa-solid fa-staff-snake flex-shrink-0"></i>
+              <div>
+                <h4><a href="" class="stretched-link">Translational Medicine</a></h4>
+                <p>Bridging laboratory discoveries with clinical applications, our translational research program accelerates the development of new treatments and therapeutic strategies.</p>
+              </div>
+            </div><!-- End Icon Box -->
+
+            <div class="icon-box d-flex position-relative" data-aos="fade-up" data-aos-delay="600">
+              <i class="fa-solid fa-lungs flex-shrink-0"></i>
+              <div>
+                <h4><a href="" class="stretched-link">Respiratory Research Center</a></h4>
+                <p>Specialized research facility dedicated to pulmonary diseases, developing innovative treatments for respiratory conditions and conducting advanced lung cancer studies.</p>
+              </div>
+            </div><!-- End Icon Box -->
+
+          </div>
+        </div>
+
+      </div>
+
+    </section><!-- /Features Section -->
+
+    <!-- Services Section -->
+    <section id="services" class="services section">
+
+      <!-- Section Title -->
+      <div class="container section-title" data-aos="fade-up">
+        <h2>Services</h2>
+        <p>Discover our comprehensive range of medical services, from advanced cardiac care to specialized rehabilitation programs, all delivered with cutting-edge technology and compassionate expertise</p>
+      </div><!-- End Section Title -->
+
+      <div class="container">
+
+        <div class="row gy-4">
+
+          <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="100">
+            <div class="service-item position-relative">
+              <div class="icon">
+                <i class="fas fa-heartbeat"></i>
+              </div>
+              <a href="#" class="stretched-link">
+                <h3>Cardiology Excellence</h3>
+              </a>
+              <p>State-of-the-art cardiac care featuring advanced diagnostics, interventional procedures, and comprehensive heart health programs. Our cardiac specialists provide expert treatment for all types of heart conditions.</p>
+            </div>
+          </div><!-- End Service Item -->
+
+          <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="200">
+            <div class="service-item position-relative">
+              <div class="icon">
+                <i class="fas fa-pills"></i>
+              </div>
+              <a href="#" class="stretched-link">
+                <h3>Specialized Pharmacy</h3>
+              </a>
+              <p>Comprehensive pharmaceutical services including medication therapy management, specialized drug compounding, and personalized patient education for optimal treatment outcomes.</p>
+            </div>
+          </div><!-- End Service Item -->
+
+          <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="300">
+            <div class="service-item position-relative">
+              <div class="icon">
+                <i class="fas fa-hospital-user"></i>
+              </div>
+              <a href="#" class="stretched-link">
+                <h3>Patient Care Services</h3>
+              </a>
+              <p>Dedicated patient support services including care coordination, personalized treatment planning, and comprehensive follow-up care to ensure the best possible health outcomes.</p>
+            </div>
+          </div><!-- End Service Item -->
+
+          <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="400">
+            <div class="service-item position-relative">
+              <div class="icon">
+                <i class="fas fa-dna"></i>
+              </div>
+              <a href="#" class="stretched-link">
+                <h3>Genetic Medicine</h3>
+              </a>
+              <p>Advanced genetic testing and counseling services, offering personalized medicine approaches and innovative treatments based on individual genetic profiles.</p>
+            </div>
+          </div><!-- End Service Item -->
+
+          <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="500">
+            <div class="service-item position-relative">
+              <div class="icon">
+                <i class="fas fa-wheelchair"></i>
+              </div>
+              <a href="#" class="stretched-link">
+                <h3>Rehabilitation Services</h3>
+              </a>
+              <p>Comprehensive physical therapy and rehabilitation programs, featuring specialized equipment and expert therapists to help patients regain mobility and independence.</p>
+            </div>
+          </div><!-- End Service Item -->
+
+          <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="600">
+            <div class="service-item position-relative">
+              <div class="icon">
+                <i class="fas fa-notes-medical"></i>
+              </div>
+              <a href="#" class="stretched-link">
+                <h3>Medical Records & Care Planning</h3>
+              </a>
+              <p>Advanced electronic health records system ensuring seamless care coordination, with personalized treatment planning and secure access to medical information.</p>
+            </div>
+          </div><!-- End Service Item -->
+
+        </div>
+
+      </div>
+
+    </section><!-- /Services Section -->
+
+    <!-- Appointment Section -->
+    <section id="appointment" class="appointment section light-background">
+
+      <!-- Section Title -->
+      <div class="container section-title" data-aos="fade-up">
+        <h2>MAKE AN APPOINTMENT</h2>
+        <p>Schedule your visit with our expert medical team. We offer flexible scheduling options, including same-day appointments for urgent care needs, ensuring you receive timely and professional medical attention</p>
+      </div><!-- End Section Title -->
+
+      <div class="container" data-aos="fade-up" data-aos-delay="100">
+
+        <form id="appointmentForm" action="{% url 'book_appointment' %}" method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="row">
+                <div class="col-md-6 form-group">
+                    <input type="text" name="patient_name" class="form-control" id="patient_name" placeholder="Your Name" required>
+                </div>
+                <div class="col-md-6 form-group mt-3 mt-md-0">
+                    <input type="tel" class="form-control" name="phone_number" id="phone_number" placeholder="Your Phone Number" required>
+                </div>
+            </div>
+            <div class="row mt-3">
+                <div class="col-md-6 form-group">
+                    <select name="doctor" id="doctor" class="form-select" required>
+                        <option value="">Select Doctor</option>
+                        {% for doctor in doctors %}
+                        <option value="{{ doctor.id }}">Dr. {{ doctor.user.get_full_name }} ({{ doctor.specialty }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-6 form-group">
+                    <input type="date" name="appointment_date" class="form-control" id="appointment_date" 
+                           min="{{ today|date:'Y-m-d' }}" required>
+                </div>
+            </div>
+            <div class="row mt-3">
+                <div class="col-md-6 form-group">
+                    <input type="time" name="appointment_time" class="form-control" id="appointment_time" required>
+                </div>
+                <div class="col-md-6 form-group">
+                    <select name="status" class="form-select" id="status">
+                        <option value="SCHEDULED">Scheduled</option>
+                        <option value="WALK_IN">Walk-In</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group mt-3">
+                <textarea class="form-control" name="reason" rows="3" placeholder="Reason for Appointment" required></textarea>
+            </div>
+            <div class="form-group mt-3">
+                <label for="medical_records" class="form-label">Previous Medical Records (if any)</label>
+                <input type="file" class="form-control" name="medical_records" id="medical_records" accept="image/*,.pdf">
+            </div>
+            <div class="form-group mt-3">
+                <textarea class="form-control" name="notes" rows="3" placeholder="Additional Notes (Optional)"></textarea>
+            </div>
+            <div class="text-center mt-3">
+                <a href="#" class="appointment-btn scrollto rounded-pill shadow-sm" 
+                   style="background: #1977cc; padding: 12px 35px; transition: all 0.3s ease; color: #000000; font-size: 2em;" 
+                   onmouseover="this.style.background='#166ab5'" 
+                   onmouseout="this.style.background='#1977cc'"
+                   onclick="event.preventDefault(); this.closest('form').submit();">
+                    Make an Appointment
+                </a>
+            </div>
+        </form>
+
+      </div>
+
+    </section><!-- /Appointment Section -->
+
+    <!-- Tabs Section -->
+    <section id="departments" class="departments section">
+
+      <!-- Section Title -->
+      <div class="container section-title" data-aos="fade-up">
+        <h2>Departments</h2>
+        <p>Explore our specialized medical departments, each staffed with expert healthcare professionals and equipped with advanced technology to provide comprehensive care across all major medical disciplines</p>
+      </div><!-- End Section Title -->
+
+      <div class="container" data-aos="fade-up" data-aos-delay="100">
+
+        <div class="row">
+          <div class="col-lg-3">
+            <ul class="nav nav-tabs flex-column">
+              <li class="nav-item">
+                <a class="nav-link active show" data-bs-toggle="tab" href="#tabs-tab-1">Cardiology</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" data-bs-toggle="tab" href="#tabs-tab-2">Neurology</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" data-bs-toggle="tab" href="#tabs-tab-3">Hepatology</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" data-bs-toggle="tab" href="#tabs-tab-4">Pediatrics</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" data-bs-toggle="tab" href="#tabs-tab-5">Ophthalmologists</a>
+              </li>
+            </ul>
+          </div>
+          <div class="col-lg-9 mt-4 mt-lg-0">
+            <div class="tab-content">
+              <div class="tab-pane active show" id="tabs-tab-1">
+                <div class="row">
+                  <div class="col-lg-8 details order-2 order-lg-1">
+                    <h3>Cardiology</h3>
+                    <p class="fst-italic">Advanced cardiac care with state-of-the-art diagnostics and interventional procedures</p>
+                    <p>Our cardiology department features cutting-edge technology for comprehensive heart care, including 3D echocardiography, cardiac catheterization, and advanced electrophysiology services. Our team of renowned cardiologists specializes in treating complex cardiovascular conditions, from preventive care to emergency interventions, ensuring optimal heart health for all patients.</p>
+                  </div>
+                  <div class="col-lg-4 text-center order-1 order-lg-2">
+                    <img src="{% static 'img/departments-1.jpg' %}" alt="departments-1.jpg" class="img-fluid">
+                  </div>
+                </div>
+              </div>
+              <div class="tab-pane" id="tabs-tab-2">
+                <div class="row">
+                  <div class="col-lg-8 details order-2 order-lg-1">
+                    <h3>Neurology</h3>
+                    <p class="fst-italic">Expert care for neurological disorders with innovative treatment approaches</p>
+                    <p>Our neurology department combines advanced diagnostic imaging with expert clinical care to treat a wide range of neurological conditions. From stroke management to treatment of neurodegenerative diseases, our neurologists utilize the latest therapeutic techniques and research-backed treatments to provide comprehensive neurological care.</p>
+                  </div>
+                  <div class="col-lg-4 text-center order-1 order-lg-2">
+                    <img src="{% static 'img/departments-2.jpg' %}" alt="departments-2.jpg" class="img-fluid">
+                  </div>
+                </div>
+              </div>
+              <div class="tab-pane" id="tabs-tab-3">
+                <div class="row">
+                  <div class="col-lg-8 details order-2 order-lg-1">
+                    <h3>Hepatology</h3>
+                    <p class="fst-italic">Specialized liver care and advanced treatment for hepatic conditions</p>
+                    <p>Our hepatology department offers comprehensive care for liver diseases, including viral hepatitis, cirrhosis, and liver cancer. Using advanced diagnostic tools and innovative treatment protocols, our specialists provide personalized care plans, including liver transplant evaluation and coordination with the Siedman Cancer Center for liver oncology cases.</p>
+                  </div>
+                  <div class="col-lg-4 text-center order-1 order-lg-2">
+                    <img src="{% static 'img/departments-3.jpg' %}" alt="departments-3.jpg" class="img-fluid">
+                  </div>
+                </div>
+              </div>
+              <div class="tab-pane" id="tabs-tab-4">
+                <div class="row">
+                  <div class="col-lg-8 details order-2 order-lg-1">
+                    <h3>Pediatrics</h3>
+                    <p class="fst-italic">Compassionate and comprehensive care for children of all ages</p>
+                    <p>Our pediatric department provides expert care from newborns to adolescents, featuring specialized programs in pediatric cardiology, neurology, and developmental medicine. With child-friendly facilities and a team of experienced pediatricians, we ensure comprehensive healthcare delivery in a warm, supportive environment focused on children's unique needs.</p>
+                  </div>
+                  <div class="col-lg-4 text-center order-1 order-lg-2">
+                    <img src="{% static 'img/departments-4.jpg' %}" alt="departments-4.jpg" class="img-fluid">
+                  </div>
+                </div>
+              </div>
+              <div class="tab-pane" id="tabs-tab-5">
+                <div class="row">
+                  <div class="col-lg-8 details order-2 order-lg-1">
+                    <h3>Ophthalmology</h3>
+                    <p class="fst-italic">Advanced eye care with cutting-edge diagnostic and surgical capabilities</p>
+                    <p>Our ophthalmology department offers comprehensive eye care services, from routine examinations to complex surgical procedures. Equipped with advanced diagnostic technology and surgical facilities, our eye specialists treat a full range of conditions including cataracts, glaucoma, retinal disorders, and pediatric eye conditions.</p>
+                  </div>
+                  <div class="col-lg-4 text-center order-1 order-lg-2">
+                    <img src="{% static 'img/departments-5.jpg' %}" alt="departments-5.jpg" class="img-fluid">
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </section><!-- /Tabs Section -->
+
+    <!-- Testimonials Section -->
+    <section id="testimonials" class="testimonials section">
+
+      <!-- Section Title -->
+      <div class="container section-title" data-aos="fade-up">
+        <h2>Testimonials</h2>
+        <p>Hear from our patients about their experiences at Medicio. These stories reflect our commitment to exceptional healthcare, compassionate service, and positive patient outcomes across all our departments</p>
+      </div><!-- End Section Title -->
+
+      <div class="container" data-aos="fade-up" data-aos-delay="100">
+
+        <div class="swiper init-swiper" data-speed="600" data-delay="5000" data-breakpoints="{ &quot;320&quot;: { &quot;slidesPerView&quot;: 1, &quot;spaceBetween&quot;: 40 }, &quot;1200&quot;: { &quot;slidesPerView&quot;: 3, &quot;spaceBetween&quot;: 40 } }">
+          <script type="application/json" class="swiper-config">
+            {
+              "loop": true,
+              "speed": 600,
+              "autoplay": {
+                "delay": 5000
+              },
+              "slidesPerView": "auto",
+              "pagination": {
+                "el": ".swiper-pagination",
+                "type": "bullets",
+                "clickable": true
+              },
+              "breakpoints": {
+                "320": {
+                  "slidesPerView": 1,
+                  "spaceBetween": 40
+                },
+                "1200": {
+                  "slidesPerView": 3,
+                  "spaceBetween": 20
+                }
+              }
+            }
+          </script>
+          <div class="swiper-wrapper">
+
+            <div class="swiper-slide">
+              <div class="testimonial-item">
+                <p>
+                  <i class="bi bi-quote quote-icon-left"></i>
+                  <span>The cardiac care team at Medicio is exceptional. After my heart surgery, their comprehensive rehabilitation program and attentive follow-up care helped me return to my normal life faster than I expected. The entire staff's professionalism and dedication are truly remarkable.</span>
+                  <i class="bi bi-quote quote-icon-right"></i>
+                </p>
+                <img src="{% static 'img/testimonials/testimonials-1.jpg' %}" class="testimonial-img" alt="testimonials-1.jpg">
+                <h3>Robert Mitchell</h3>
+                <h4>Business Executive</h4>
+              </div>
+            </div><!-- End testimonial item -->
+
+            <div class="swiper-slide">
+              <div class="testimonial-item">
+                <p>
+                  <i class="bi bi-quote quote-icon-left"></i>
+                  <span>As someone who works in a creative field, I was worried about my eye surgery affecting my career. The ophthalmology department provided exceptional care throughout my treatment. Their expertise and advanced technology gave me complete confidence.</span>
+                  <i class="bi bi-quote quote-icon-right"></i>
+                </p>
+                <img src="{% static 'img/testimonials/testimonials-2.jpg' %}" class="testimonial-img" alt="testimonials-2.jpg">
+                <h3>Sarah Wilson</h3>
+                <h4>Graphic Designer</h4>
+              </div>
+            </div><!-- End testimonial item -->
+
+            <div class="swiper-slide">
+              <div class="testimonial-item">
+                <p>
+                  <i class="bi bi-quote quote-icon-left"></i>
+                  <span>The pediatric department's child-friendly environment and caring staff made my daughter's hospital stay much easier. The doctors were incredibly patient in explaining everything, and the nurses went above and beyond to keep her comfortable and cheerful.</span>
+                  <i class="bi bi-quote quote-icon-right"></i>
+                </p>
+                <img src="{% static 'img/testimonials/testimonials-3.jpg' %}" class="testimonial-img" alt="testimonials-3.jpg">
+                <h3>Jennifer Parker</h3>
+                <h4>School Teacher</h4>
+              </div>
+            </div><!-- End testimonial item -->
+
+            <div class="swiper-slide">
+              <div class="testimonial-item">
+                <p>
+                  <i class="bi bi-quote quote-icon-left"></i>
+                  <span>As an athlete, I needed specialized rehabilitation after my sports injury. The physical therapy team at Medicio created a personalized recovery plan that got me back to competitive form. Their expertise in sports medicine and dedication to my recovery was outstanding.</span>
+                  <i class="bi bi-quote quote-icon-right"></i>
+                </p>
+                <img src="{% static 'img/testimonials/testimonials-4.jpg' %}" class="testimonial-img" alt="testimonials-4.jpg">
+                <h3>Michael Thompson</h3>
+                <h4>Professional Athlete</h4>
+              </div>
+            </div><!-- End testimonial item -->
+
+            <div class="swiper-slide">
+              <div class="testimonial-item">
+                <p>
+                  <i class="bi bi-quote quote-icon-left"></i>
+                  <span>The genetic testing program at Medicio helped identify my health risks early. The team's thorough approach to preventive care and their clear communication about treatment options gave me peace of mind. Their ongoing support has been invaluable.</span>
+                  <i class="bi bi-quote quote-icon-right"></i>
+                </p>
+                <img src="{% static 'img/testimonials/testimonials-5.jpg' %}" class="testimonial-img" alt="testimonials-5.jpg">
+                <h3>David Anderson</h3>
+                <h4>Technology Consultant</h4>
+              </div>
+            </div><!-- End testimonial item -->
+
+          </div>
+          <div class="swiper-pagination"></div>
+        </div>
+
+      </div>
+
+    </section><!-- /Testimonials Section -->
+
+    <!-- Doctors Section -->
+    <section id="doctors" class="doctors section light-background">
+
+      <!-- Section Title -->
+      <div class="container section-title" data-aos="fade-up">
+        <h2>Our Expert Doctors</h2>
+        <p>Meet our team of highly qualified medical professionals, each bringing years of specialized experience and dedication to providing exceptional patient care across various medical disciplines</p>
+      </div><!-- End Section Title -->
+
+      <div class="container">
+
+        <div class="row gy-4">
+
+          <div class="col-lg-3 col-md-6 d-flex align-items-stretch" data-aos="fade-up" data-aos-delay="100">
+            <div class="team-member">
+              <div class="member-img">
+                <img src="{% static 'img/doctors/doctors-1.jpg' %}" class="img-fluid" alt="doctors-1.jpg">
+                <div class="social">
+                  <a href=""><i class="bi bi-twitter-x"></i></a>
+                  <a href=""><i class="bi bi-facebook"></i></a>
+                  <a href=""><i class="bi bi-instagram"></i></a>
+                  <a href=""><i class="bi bi-linkedin"></i></a>
+                </div>
+              </div>
+              <div class="member-info">
+                <h4>Walter White</h4>
+                <span>Chief Medical Officer</span>
+              </div>
+            </div>
+          </div><!-- End Team Member -->
+
+          <div class="col-lg-3 col-md-6 d-flex align-items-stretch" data-aos="fade-up" data-aos-delay="200">
+            <div class="team-member">
+              <div class="member-img">
+                <img src="{% static 'img/doctors/doctors-2.jpg' %}" class="img-fluid" alt="doctors-2.jpg">
+                <div class="social">
+                  <a href=""><i class="bi bi-twitter-x"></i></a>
+                  <a href=""><i class="bi bi-facebook"></i></a>
+                  <a href=""><i class="bi bi-instagram"></i></a>
+                  <a href=""><i class="bi bi-linkedin"></i></a>
+                </div>
+              </div>
+              <div class="member-info">
+                <h4>Sarah Jhonson</h4>
+                <span>Anesthesiologist</span>
+              </div>
+            </div>
+          </div><!-- End Team Member -->
+
+          <div class="col-lg-3 col-md-6 d-flex align-items-stretch" data-aos="fade-up" data-aos-delay="300">
+            <div class="team-member">
+              <div class="member-img">
+                <img src="{% static 'img/doctors/doctors-3.jpg' %}" class="img-fluid" alt="doctors-3.jpg">
+                <div class="social">
+                  <a href=""><i class="bi bi-twitter-x"></i></a>
+                  <a href=""><i class="bi bi-facebook"></i></a>
+                  <a href=""><i class="bi bi-instagram"></i></a>
+                  <a href=""><i class="bi bi-linkedin"></i></a>
+                </div>
+              </div>
+              <div class="member-info">
+                <h4>William Anderson</h4>
+                <span>Cardiology</span>
+              </div>
+            </div>
+          </div><!-- End Team Member -->
+
+          <div class="col-lg-3 col-md-6 d-flex align-items-stretch" data-aos="fade-up" data-aos-delay="400">
+            <div class="team-member">
+              <div class="member-img">
+                <img src="{% static 'img/doctors/doctors-4.jpg' %}" class="img-fluid" alt="doctors-4.jpg">
+                <div class="social">
+                  <a href=""><i class="bi bi-twitter-x"></i></a>
+                  <a href=""><i class="bi bi-facebook"></i></a>
+                  <a href=""><i class="bi bi-instagram"></i></a>
+                  <a href=""><i class="bi bi-linkedin"></i></a>
+                </div>
+              </div>
+              <div class="member-info">
+                <h4>Amanda Jepson</h4>
+                <span>Neurosurgeon</span>
+              </div>
+            </div>
+          </div><!-- End Team Member -->
+
+        </div>
+
+      </div>
+
+    </section><!-- /Doctors Section -->
+
+    <!-- Gallery Section -->
+    <section id="gallery" class="gallery section">
+
+      <!-- Section Title -->
+      <div class="container section-title" data-aos="fade-up">
+        <h2>Gallery</h2>
+        <p>Take a virtual tour through our state-of-the-art medical facilities, modern equipment, and welcoming environments designed to provide the highest standard of patient care and comfort</p>
+      </div><!-- End Section Title -->
+
+      <div class="container" data-aos="fade-up" data-aos-delay="100">
+
+        <div class="swiper init-swiper">
+          <script type="application/json" class="swiper-config">
+            {
+              "loop": true,
+              "speed": 600,
+              "autoplay": {
+                "delay": 5000
+              },
+              "slidesPerView": "auto",
+              "centeredSlides": true,
+              "pagination": {
+                "el": ".swiper-pagination",
+                "type": "bullets",
+                "clickable": true
+              },
+              "breakpoints": {
+                "320": {
+                  "slidesPerView": 1,
+                  "spaceBetween": 0
+                },
+                "768": {
+                  "slidesPerView": 3,
+                  "spaceBetween": 20
+                },
+                "1200": {
+                  "slidesPerView": 5,
+                  "spaceBetween": 20
+                }
+              }
+            }
+          </script>
+          <div class="swiper-wrapper align-items-center">
+            <div class="swiper-slide"><a class="glightbox" data-gallery="images-gallery" href="{% static 'img/gallery/gallery-1.jpg' %}"><img src="{% static 'img/gallery/gallery-1.jpg' %}" class="img-fluid" alt=""></a></div>
+            <div class="swiper-slide"><a class="glightbox" data-gallery="images-gallery" href="{% static 'img/gallery/gallery-2.jpg' %}"><img src="{% static 'img/gallery/gallery-2.jpg' %}" class="img-fluid" alt=""></a></div>
+            <div class="swiper-slide"><a class="glightbox" data-gallery="images-gallery" href="{% static 'img/gallery/gallery-3.jpg' %}"><img src="{% static 'img/gallery/gallery-3.jpg' %}" class="img-fluid" alt=""></a></div>
+            <div class="swiper-slide"><a class="glightbox" data-gallery="images-gallery" href="{% static 'img/gallery/gallery-4.jpg' %}"><img src="{% static 'img/gallery/gallery-4.jpg' %}" class="img-fluid" alt=""></a></div>
+            <div class="swiper-slide"><a class="glightbox" data-gallery="images-gallery" href="{% static 'img/gallery/gallery-5.jpg' %}"><img src="{% static 'img/gallery/gallery-5.jpg' %}" class="img-fluid" alt=""></a></div>
+            <div class="swiper-slide"><a class="glightbox" data-gallery="images-gallery" href="{% static 'img/gallery/gallery-6.jpg' %}"><img src="{% static 'img/gallery/gallery-6.jpg' %}" class="img-fluid" alt=""></a></div>
+            <div class="swiper-slide"><a class="glightbox" data-gallery="images-gallery" href="{% static 'img/gallery/gallery-7.jpg' %}"><img src="{% static 'img/gallery/gallery-7.jpg' %}" class="img-fluid" alt=""></a></div>
+            <div class="swiper-slide"><a class="glightbox" data-gallery="images-gallery" href="{% static 'img/gallery/gallery-8.jpg' %}"><img src="{% static 'img/gallery/gallery-8.jpg' %}" class="img-fluid" alt=""></a></div>
+          </div>
+          <div class="swiper-pagination"></div>
+        </div>
+
+      </div>
+
+    </section><!-- /Gallery Section -->
+    <!-- Faq Section -->
+    <section id="faq" class="faq section light-background">
+
+      <!-- Section Title -->
+      <div class="container section-title" data-aos="fade-up">
+        <h2>Frequently Asked Questions</h2>
+        <p>Find answers to common questions about our medical services, appointments, insurance coverage, and patient care procedures at Medicio. Our commitment is to provide clear, helpful information to our patients.</p>
+      </div><!-- End Section Title -->
+
+      <div class="container">
+
+        <div class="row justify-content-center">
+
+          <div class="col-lg-10" data-aos="fade-up" data-aos-delay="100">
+
+            <div class="faq-container">
+
+              <div class="faq-item">
+                <h3>What are your visiting hours and policies?</h3>
+                <div class="faq-content">
+                  <p>General visiting hours are from 10:00 AM to 8:00 PM daily. ICU and special care units have specific visiting hours (2:00 PM - 4:00 PM and 6:00 PM - 7:00 PM). We request visitors to maintain silence and follow hospital guidelines. Due to health safety protocols, children under 12 may have restricted access to certain areas.</p>
+                </div>
+                <i class="faq-toggle bi bi-chevron-right"></i>
+              </div><!-- End Faq item-->
+
+              <div class="faq-item">
+                <h3>How do I schedule an appointment with a specialist?</h3>
+                <div class="faq-content">
+                  <p>You can schedule appointments through our online booking system, by calling our appointment desk at (555) 123-4567, or visiting our reception desk. For specialist consultations, you may need a referral from your primary care physician. Emergency cases are handled immediately without prior appointments.</p>
+                </div>
+                <i class="faq-toggle bi bi-chevron-right"></i>
+              </div><!-- End Faq item-->
+
+              <div class="faq-item">
+                <h3>What insurance plans do you accept?</h3>
+                <div class="faq-content">
+                  <p>We accept most major insurance plans including Medicare, Blue Cross Blue Shield, Aetna, Cigna, and UnitedHealthcare. Please contact our billing department or check with your insurance provider about specific coverage details. We also offer flexible payment plans for uninsured patients.</p>
+                </div>
+                <i class="faq-toggle bi bi-chevron-right"></i>
+              </div><!-- End Faq item-->
+
+              <div class="faq-item">
+                <h3>What should I bring for hospital admission?</h3>
+                <div class="faq-content">
+                  <p>Please bring your photo ID, insurance card, list of current medications, relevant medical records, comfortable clothing, and basic toiletries. For planned admissions, our admission desk will provide you with a detailed checklist during pre-admission counseling.</p>
+                </div>
+                <i class="faq-toggle bi bi-chevron-right"></i>
+              </div><!-- End Faq item-->
+
+              <div class="faq-item">
+                <h3>Do you have emergency services available 24/7?</h3>
+                <div class="faq-content">
+                  <p>Yes, our emergency department is open 24/7 with fully equipped trauma care facilities. We have specialized emergency medical teams available round the clock, including critical care specialists, surgeons, and support staff. Ambulance services are also available 24/7.</p>
+                </div>
+                <i class="faq-toggle bi bi-chevron-right"></i>
+              </div><!-- End Faq item-->
+
+              <div class="faq-item">
+                <h3>How can I access my medical records?</h3>
+                <div class="faq-content">
+                  <p>You can access your medical records through our patient portal or by submitting a written request to our Medical Records Department. For privacy and security reasons, we require proper identification and may take up to 7-10 working days to process physical copy requests.</p>
+                </div>
+                <i class="faq-toggle bi bi-chevron-right"></i>
+              </div><!-- End Faq item-->
+
+            </div>
+
+          </div><!-- End Faq Column-->
+
+        </div>
+
+      </div>
+
+    </section><!-- /Faq Section -->
+
+    <!-- Contact Section -->
+    <section id="contact" class="contact section">
+
+      <!-- Section Title -->
+      <div class="container section-title" data-aos="fade-up">
+        <h2>Contact</h2>
+        <p>Get in touch with us for appointments, inquiries, or emergency assistance. Our dedicated team is available to help you with any questions about our medical services, insurance coverage, or general information</p>
+      </div><!-- End Section Title -->
+
+      <div class="mb-5" data-aos="fade-up" data-aos-delay="200">
+        <iframe style="border:0; width: 100%; height: 370px;" src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3928.8597465339153!2d76.33476981026641!3d10.028430590037072!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3b080c8c99226133%3A0x140c71a32722e065!2sEntri%20App%20HQ!5e0!3m2!1sen!2sin!4v1732129951550!5m2!1sen!2sin" frameborder="0" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+      </div><!-- End Google Maps -->
+
+      <div class="container" data-aos="fade-up" data-aos-delay="100">
+        <div class="row justify-content-center">
+          <div class="col-lg-8 text-center">
+            <div class="row gy-4">
+              <div class="col-lg-12">
+                <div class="info-item d-flex flex-column justify-content-center align-items-center" data-aos="fade-up" data-aos-delay="200">
+                  <i class="bi bi-geo-alt"></i>
+                  <h3>Address</h3>
+                  <p>Maleppally Rd, Thrikkakara, Kakkanad, Kerala 682021</p>
+                </div>
+              </div><!-- End Info Item -->
+
+              <div class="col-md-6">
+                <div class="info-item d-flex flex-column justify-content-center align-items-center" data-aos="fade-up" data-aos-delay="300">
+                  <i class="bi bi-telephone"></i>
+                  <h3>Call Us</h3>
+                  <p>+1 5589 55488 55</p>
+                </div>
+              </div><!-- End Info Item -->
+
+              <div class="col-md-6">
+                <div class="info-item d-flex flex-column justify-content-center align-items-center" data-aos="fade-up" data-aos-delay="400">
+                  <i class="bi bi-envelope"></i>
+                  <h3>Email Us</h3>
+                  <p>info@medic.io</p>
+                </div>
+              </div><!-- End Info Item -->
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </section><!-- /Contact Section -->
+
+  </main>
+
+  {% endblock %}
+  <!-- Scroll Top -->
+  <a href="#" id="scroll-top" class="scroll-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
+
+  <!-- Vendor JS Files -->
+  <script src="{% static 'vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+  <script src="{% static 'vendor/php-email-form/validate.js' %}"></script>
+  <script src="{% static 'vendor/aos/aos.js' %}"></script>
+  <script src="{% static 'vendor/glightbox/js/glightbox.min.js' %}"></script>
+  <script src="{% static 'vendor/purecounter/purecounter_vanilla.js' %}"></script>
+  <script src="{% static 'vendor/swiper/swiper-bundle.min.js' %}"></script>
+
+  <!-- Main JS File -->
+  <script src="{% static 'js/main.js' %}"></script>
+
+  <!-- Add this before closing </body> tag, after other script tags -->
+  <script src="{% static 'js/form-handler.js' %}"></script>
+
+</body>
+
+</html>

@@ -1,0 +1,133 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Staff Portal - HMS</title>
+    <link href="{% static 'css/login.css' %}" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Raleway:400,700" rel="stylesheet">
+    <style>
+        .error-message {
+            color: #ff3333;
+            text-align: center;
+            margin-top: 10px;
+        }
+        input {
+            margin-bottom: 20px;
+            border-radius: 25px !important;
+            padding: 12px 20px !important;
+            border: 2px solid #e0e0e0;
+            transition: all 0.3s ease;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        input:focus {
+            border-color: #1977cc;
+            outline: none;
+            box-shadow: 0 0 10px rgba(25, 119, 204, 0.1);
+        }
+        button[type="submit"] {
+            background: linear-gradient(45deg, #1977cc, #3291e6);
+            color: white;
+            padding: 12px 35px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin-top: 10px;
+            box-shadow: 0 4px 15px rgba(25, 119, 204, 0.2);
+        }
+        button[type="submit"]:hover {
+            background: linear-gradient(45deg, #1565c0, #1977cc);
+            box-shadow: 0 6px 20px rgba(25, 119, 204, 0.3);
+            transform: translateY(-2px);
+        }
+        .back-link {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .back-link a {
+            color: #666;
+            text-decoration: none;
+            font-size: 14px;
+            transition: color 0.3s ease;
+        }
+        .back-link a:hover {
+            color: #1977cc;
+        }
+        .logo-container {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .logo-container img {
+            width: 120px;
+            height: auto;
+            margin-bottom: 15px;
+            transition: transform 0.3s ease;
+        }
+        .logo-container img:hover {
+            transform: scale(1.05);
+        }
+        .logo-text {
+            font-size: 24px;
+            color: #1977cc;
+            font-weight: bold;
+            margin: 10px 0;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .form-group {
+            position: relative;
+            margin-bottom: 20px;
+        }
+        .form-group i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #666;
+        }
+        .center {
+            padding: 40px !important;
+            border-radius: 20px !important;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1) !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="top"></div>
+        <div class="bottom"></div>
+        <div class="center">
+            <div class="logo-container">
+                <img src="{% static 'img/logo.png' %}" alt="Hospital Logo">
+                <div class="logo-text">Staff Portal</div>
+            </div>
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="error-message">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+            <form method="post" action="{% url 'login' %}">
+                {% csrf_token %}
+                <div class="form-group">
+                    <input type="text" name="username" placeholder="Username" required>
+                </div>
+                <div class="form-group">
+                    <input type="password" name="password" placeholder="Password" required>
+                </div>
+                <button type="submit">Login</button>
+            </form>
+            <div class="back-link">
+                <a href="{% url 'home' %}">← Back to Homepage</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
