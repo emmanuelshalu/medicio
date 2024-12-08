@@ -96,7 +96,7 @@
         .center {
             padding: 40px !important;
             border-radius: 20px !important;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1) !important;
+            box-shadow: none !important;
         }
     </style>
 </head>
@@ -106,7 +106,7 @@
         <div class="bottom"></div>
         <div class="center">
             <div class="logo-container">
-                <img src="{% static 'img/logo.png' %}" alt="Hospital Logo">
+                <img href="{% url 'home' %}" src="{% static 'img/logo.png' %}" alt="Hospital Logo">
                 <div class="logo-text">Staff Portal</div>
             </div>
             {% if messages %}
