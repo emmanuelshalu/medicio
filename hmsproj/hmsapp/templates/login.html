@@ -106,7 +106,9 @@
         <div class="bottom"></div>
         <div class="center">
             <div class="logo-container">
-                <img href="{% url 'home' %}" src="{% static 'img/logo.png' %}" alt="Hospital Logo">
+                <a href="{% url 'home' %}">
+                    <img src="{% static 'img/logo.png' %}" alt="Hospital Logo">
+                </a>
                 <div class="logo-text">Staff Portal</div>
             </div>
             {% if messages %}

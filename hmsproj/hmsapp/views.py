@@ -386,7 +386,7 @@ def manage_doctors(request):
     return render(request, 'hosp_admin/manage_doctors.html', context)
 
 @login_required
-@admin_required
+@user_passes_test(lambda u: u.groups.filter(name__in=['Staff', 'Administrators', 'Doctors']).exists())
 def manage_patients(request):
     if request.method == 'POST':
         print("POST request received")
@@ -435,10 +435,21 @@ def manage_patients(request):
                 user.delete()
             messages.error(request, f'Error adding patient: {str(e)}')
             return redirect('manage_patients')
-    
+        
+    # Check if user is authenticated and has the appropriate role
+    if request.user.is_authenticated:
+        if request.user.groups.filter(name='Doctors').exists():
+            base_template = 'doctor/base_doctor.html'
+        elif request.user.groups.filter(name='Administrators').exists():
+            base_template = 'hosp_admin/base_admin.html'
+        else:
+            base_template = 'staff/base_staff.html'
+    else:
+        base_template = 'staff/base_staff.html'
     # For GET requests
     patients = Patient.objects.all()
     context = {
+        'base_template': base_template,
         'patients': patients
     }
     
@@ -530,7 +541,7 @@ def manage_staff(request):
     return render(request, 'hosp_admin/manage_staff.html', context)
 
 @login_required
-@admin_required
+@user_passes_test(lambda u: u.groups.filter(name__in=['Staff', 'Administrators']).exists())
 def manage_bills(request):
     bills = Bill.objects.select_related('patient', 'treatment').all()
     
@@ -550,8 +561,20 @@ def manage_bills(request):
     total_bills = bills.count()
     pending_bills = bills.filter(payment_status='PENDING').count()
     overdue_bills = bills.filter(payment_status='OVERDUE').count()
-    
+
+    # Check if user is authenticated and has the appropriate role
+    if request.user.is_authenticated:
+        if request.user.groups.filter(name='Doctors').exists():
+            base_template = 'doctor/base_doctor.html'
+        elif request.user.groups.filter(name='Administrators').exists():
+            base_template = 'hosp_admin/base_admin.html'
+        else:
+            base_template = 'staff/base_staff.html'
+    else:
+        base_template = 'staff/base_staff.html'
+
     context = {
+        'base_template': base_template,
         'bills': bills,
         'total_bills': total_bills,
         'pending_bills': pending_bills,
@@ -711,17 +734,31 @@ def delete_doctor(request, doctor_id):
     return redirect('manage_doctors')
 
 @login_required
+@user_passes_test(lambda u: u.groups.filter(name__in=['Staff', 'Administrators', 'Doctors']).exists())
 def view_patient(request, patient_id):
     patient = get_object_or_404(Patient, id=patient_id)
     medical_records = MedicalRecord.objects.filter(patient=patient).order_by('-record_date')
-    
+
+    # Check if user is authenticated and has the appropriate role
+    if request.user.is_authenticated:
+        if request.user.groups.filter(name='Doctors').exists():
+            base_template = 'doctor/base_doctor.html'
+        elif request.user.groups.filter(name='Administrators').exists():
+            base_template = 'hosp_admin/base_admin.html'
+        else:
+            base_template = 'staff/base_staff.html'
+    else:
+        base_template = 'staff/base_staff.html'
+
     context = {
+        'base_template': base_template,
         'patient': patient,
         'medical_records': medical_records
     }
     return render(request, 'shared/view_patient.html', context)
 
 @login_required
+@user_passes_test(lambda u: u.groups.filter(name__in=['Staff', 'Administrators', 'Doctors']).exists())
 def edit_patient(request, patient_id):
     patient = get_object_or_404(Patient, id=patient_id)
     blood_groups = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-']
@@ -756,12 +793,24 @@ def edit_patient(request, patient_id):
             
         except Exception as e:
             messages.error(request, f'Error updating patient: {str(e)}')
+
+    # Check if user is authenticated and has the appropriate role
+    if request.user.is_authenticated:
+        if request.user.groups.filter(name='Doctors').exists():
+            base_template = 'doctor/base_doctor.html'
+        elif request.user.groups.filter(name='Administrators').exists():
+            base_template = 'hosp_admin/base_admin.html'
+        else:
+            base_template = 'staff/base_staff.html'
+    else:
+        base_template = 'staff/base_staff.html'
     
     context = {
+        'base_template': base_template,
         'patient': patient,
         'blood_groups': blood_groups
     }
-    return render(request, 'hosp_admin/edit_patient.html', context)
+    return render(request, 'shared/edit_patient.html', context)
 
 @login_required
 def delete_patient(request, patient_id):
