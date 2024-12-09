@@ -125,9 +125,7 @@
                             <select class="form-select" id="doctor" name="doctor" required>
                                 <option value="">Select Doctor</option>
                                 {% for doctor in doctors %}
-                                {% if doctor.availability %}
-                                <option value="{{ doctor.id }}">Dr. {{ doctor.user.get_full_name }} ({{ doctor.specialty }})</option>
-                                {% endif %}
+                                    <option value="{{ doctor.id }}">Dr. {{ doctor.user.first_name }} {{ doctor.user.last_name }}</option>
                                 {% endfor %}
                             </select>
                         </div>
@@ -217,6 +215,53 @@
         } else {
             alert('Please fill in all required fields');
         }
+    });
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const appointmentForm = document.getElementById('addAppointmentForm');
+        const doctorSelect = document.getElementById('doctor');
+        const dateInput = document.getElementById('appointmentDate');
+        const timeInput = document.getElementById('appointmentTime');
+        
+        // Set minimum date to today
+        const today = new Date();
+        dateInput.min = today.toISOString().split('T')[0];
+        
+        appointmentForm.addEventListener('submit', function(e) {
+            const selectedDate = new Date(dateInput.value + 'T' + timeInput.value);
+            const now = new Date();
+            
+            // Check if appointment is in the past
+            if (selectedDate < now) {
+                e.preventDefault();
+                alert('Cannot book appointments in the past');
+                return;
+            }
+            
+            // Additional validation can be added here
+        });
+        
+        // Optional: Add AJAX call to check doctor availability when date/time is selected
+        function checkDoctorAvailability() {
+            const doctorId = doctorSelect.value;
+            const date = dateInput.value;
+            const time = timeInput.value;
+            
+            if (doctorId && date && time) {
+                fetch(`/api/check-availability/?doctor=${doctorId}&date=${date}&time=${time}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (!data.available) {
+                            alert('Selected time is outside doctor\'s availability');
+                            timeInput.value = '';
+                        }
+                    });
+            }
+        }
+        
+        timeInput.addEventListener('change', checkDoctorAvailability);
+        dateInput.addEventListener('change', checkDoctorAvailability);
+        doctorSelect.addEventListener('change', checkDoctorAvailability);
     });
 </script>
 {% endblock %}

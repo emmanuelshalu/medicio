@@ -113,6 +113,9 @@ class DoctorAvailability(models.Model):
         verbose_name_plural = "Doctor Availabilities"
         ordering = ['day_of_week', 'start_time']
 
+    def __str__(self):
+        return f"{self.doctor.user.get_full_name()} - {self.get_day_of_week_display()}"
+
 class Patient(models.Model):
     """Patient model representing hospital patients"""
     

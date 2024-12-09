@@ -4,7 +4,7 @@ from django.contrib import messages
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.models import User, Group
 from django.http import JsonResponse
-from datetime import date, datetime, timedelta
+from datetime import date, datetime, timedelta, time
 from .models import *
 from .decorators import admin_required, doctor_required, staff_required
 from decimal import Decimal
@@ -55,7 +55,7 @@ def book_appointment(request):
                 defaults={
                     'user': user,
                     'patient_name': patient_name,
-                    'date_of_birth': datetime.now().date(),  # Default value
+                    'date_of_birth': timezone.now().date(),  # Use timezone-aware date
                     'blood_group': 'O+',  # Default value
                     'gender': 'OTHER',  # Default value
                     'nationality': 'Not Specified',  # Default value
@@ -65,12 +65,13 @@ def book_appointment(request):
             )
 
             # Create appointment
+            appointment_datetime = timezone.make_aware(datetime.combine(appointment_date, appointment_time))  # Combine date and time
             appointment = Appointment.objects.create(
                 patient=patient,
                 doctor_id=doctor_id,
                 phone_number=phone_number,
-                appointment_date=appointment_date,
-                appointment_time=appointment_time,
+                appointment_date=appointment_datetime.date(),
+                appointment_time=appointment_datetime.time(),
                 reason=reason,
                 notes=notes,
                 status=status
@@ -83,7 +84,7 @@ def book_appointment(request):
                 # First create MedicalRecord entry
                 medical_record = MedicalRecord.objects.create(
                     patient=patient,
-                    record_date=datetime.now().date(),
+                    record_date=timezone.now().date(),
                     description=f"Medical records uploaded during appointment booking - {reason}",
                     document=medical_file
                 )
@@ -105,7 +106,7 @@ def book_appointment(request):
     context = {
         'doctors': doctors,
     }
-    return render(request, 'home.html', context)
+    return render(request, 'shared/manage_appointments.html', context)
 
 def get_doctors(request, specialty_id):
     doctors = DoctorProfile.objects.filter(specialty_id=specialty_id, is_active=True)
@@ -311,19 +312,7 @@ def add_treatment(request, appointment_id):
         messages.success(request, 'Treatment record added successfully!')
         return redirect('doctor_dashboard')
     
-    # Check if user is authenticated and has the appropriate role
-    if request.user.is_authenticated:
-        if request.user.groups.filter(name='Doctors').exists():
-            base_template = 'doctor/base_doctor.html'
-        elif request.user.groups.filter(name='Administrators').exists():
-            base_template = 'hosp_admin/base_admin.html'
-        else:
-            base_template = 'staff/base_staff.html'
-    else:
-        base_template = 'staff/base_staff.html'
-
     context = {
-        'base_template': base_template,
         'appointment': appointment,
         'patient': appointment.patient
     }
@@ -449,20 +438,9 @@ def manage_patients(request):
             messages.error(request, f'Error adding patient: {str(e)}')
             return redirect('manage_patients')
         
-    # Check if user is authenticated and has the appropriate role
-    if request.user.is_authenticated:
-        if request.user.groups.filter(name='Doctors').exists():
-            base_template = 'doctor/base_doctor.html'
-        elif request.user.groups.filter(name='Administrators').exists():
-            base_template = 'hosp_admin/base_admin.html'
-        else:
-            base_template = 'staff/base_staff.html'
-    else:
-        base_template = 'staff/base_staff.html'
     # For GET requests
     patients = Patient.objects.all()
     context = {
-        'base_template': base_template,
         'patients': patients
     }
     
@@ -472,52 +450,69 @@ def manage_patients(request):
 @user_passes_test(lambda u: u.groups.filter(name__in=['Staff', 'Administrators', 'Doctors']).exists())
 def manage_appointments(request):
     if request.method == 'POST':
-        # Get form data
-        doctor_id = request.POST.get('doctor')
-        appointment_date = request.POST.get('appointment_date')
-        appointment_time = request.POST.get('appointment_time')
-
-        # Check if the appointment time is in the past
-        appointment_datetime = timezone.datetime.strptime(f"{appointment_date} {appointment_time}", "%Y-%m-%d %H:%M")
-        if appointment_datetime < timezone.now():
-            messages.error(request, "You cannot book an appointment in the past.")
+        try:
+            doctor_id = request.POST.get('doctor')
+            appointment_date = request.POST.get('appointment_date')
+            appointment_time = request.POST.get('appointment_time')
+            
+            # Convert strings to datetime objects
+            appointment_datetime = timezone.make_aware(
+                datetime.strptime(f"{appointment_date} {appointment_time}", "%Y-%m-%d %H:%M")
+            )
+            
+            # Check if appointment is in the past
+            if appointment_datetime < timezone.now():
+                messages.error(request, "Cannot book appointments in the past")
+                return redirect('manage_appointments')
+            
+            # Get doctor's availability
+            doctor = DoctorProfile.objects.get(id=doctor_id)
+            day_of_week = appointment_datetime.weekday()
+            
+            # Get doctor's availability for this day
+            availability = DoctorAvailability.objects.filter(
+                doctor=doctor,
+                day_of_week=day_of_week,
+                is_available=True
+            ).first()
+            
+            # If no specific availability, use default (9 AM to 5 PM)
+            if not availability:
+                default_start = time(9, 0)  # 9 AM
+                default_end = time(17, 0)   # 5 PM
+                is_available = default_start <= appointment_datetime.time() <= default_end
+            else:
+                is_available = availability.start_time <= appointment_datetime.time() <= availability.end_time
+            
+            if not is_available:
+                messages.error(request, "Selected time is outside doctor's availability")
+                return redirect('manage_appointments')
+            
+            # Create the appointment if all checks pass
+            appointment = Appointment.objects.create(
+                patient_id=request.POST.get('patient'),
+                doctor=doctor,
+                appointment_date=appointment_datetime.date(),
+                appointment_time=appointment_datetime.time(),
+                status=request.POST.get('status', 'SCHEDULED'),
+                notes=request.POST.get('notes', ''),
+                phone_number=request.POST.get('phone_number')
+            )
+            
+            messages.success(request, 'Appointment scheduled successfully!')
+            return redirect('manage_appointments')
+            
+        except Exception as e:
+            messages.error(request, f'Error scheduling appointment: {str(e)}')
             return redirect('manage_appointments')
 
-        # Check doctor's availability
-        doctor = doctor.objects.get(id=doctor_id)
-        if not doctor.is_available(appointment_datetime):
-            messages.error(request, "The selected doctor is not available at this time.")
-            return redirect('manage_appointments')
-
-        # Create the appointment
-        Appointment.objects.create(
-            doctor=doctor,
-            appointment_date=appointment_date,
-            appointment_time=appointment_time,
-            # ... other fields ...
-        )
-        messages.success(request, "Appointment scheduled successfully.")
-        return redirect('manage_appointments')
-
-    # Check if user is authenticated and has the appropriate role
-    if request.user.is_authenticated:
-        if request.user.groups.filter(name='Doctors').exists():
-            base_template = 'doctor/base_doctor.html'
-        elif request.user.groups.filter(name='Administrators').exists():
-            base_template = 'hosp_admin/base_admin.html'
-        else:
-            base_template = 'staff/base_staff.html'
-    else:
-        base_template = 'staff/base_staff.html'
-    
+    # For GET requests
     context = {
-        'base_template': base_template,
         'appointments': Appointment.objects.all().order_by('-appointment_date', '-appointment_time'),
         'doctors': DoctorProfile.objects.all(),
         'patients': Patient.objects.all(),
-        'today': date.today(),
+        'today': timezone.now().date()
     }
-    
     return render(request, 'shared/manage_appointments.html', context)
 
 @login_required
@@ -585,19 +580,7 @@ def manage_bills(request):
     pending_bills = bills.filter(payment_status='PENDING').count()
     overdue_bills = bills.filter(payment_status='OVERDUE').count()
 
-    # Check if user is authenticated and has the appropriate role
-    if request.user.is_authenticated:
-        if request.user.groups.filter(name='Doctors').exists():
-            base_template = 'doctor/base_doctor.html'
-        elif request.user.groups.filter(name='Administrators').exists():
-            base_template = 'hosp_admin/base_admin.html'
-        else:
-            base_template = 'staff/base_staff.html'
-    else:
-        base_template = 'staff/base_staff.html'
-
     context = {
-        'base_template': base_template,
         'bills': bills,
         'total_bills': total_bills,
         'pending_bills': pending_bills,
@@ -611,18 +594,7 @@ def manage_bills(request):
 @user_passes_test(lambda u: u.groups.filter(name__in=['Staff', 'Administrators']).exists())
 def view_bill(request, bill_id):
     bill = get_object_or_404(Bill, id=bill_id)
-    # Check if user is authenticated and has the appropriate role
-    if request.user.is_authenticated:
-        if request.user.groups.filter(name='Doctors').exists():
-            base_template = 'doctor/base_doctor.html'
-        elif request.user.groups.filter(name='Administrators').exists():
-            base_template = 'hosp_admin/base_admin.html'
-        else:
-            base_template = 'staff/base_staff.html'
-    else:
-        base_template = 'staff/base_staff.html'
     context = {
-        'base_template': base_template,
         'bill': bill,
     }
     return render(request, 'shared/view_bill.html', context)
@@ -652,20 +624,8 @@ def create_bill(request):
     
     # Get only treatments that don't have bills yet
     treatments = Treatment.objects.filter(bill__isnull=True).select_related('patient', 'doctor')
-
-    # Check if user is authenticated and has the appropriate role
-    if request.user.is_authenticated:
-        if request.user.groups.filter(name='Doctors').exists():
-            base_template = 'doctor/base_doctor.html'
-        elif request.user.groups.filter(name='Administrators').exists():
-            base_template = 'hosp_admin/base_admin.html'
-        else:
-            base_template = 'staff/base_staff.html'
-    else:
-        base_template = 'staff/base_staff.html'
     
     context = {
-        'base_template': base_template,
         'treatments': treatments,
         'today': date.today()
     }
@@ -689,19 +649,7 @@ def edit_bill(request, bill_id):
         except Exception as e:
             messages.error(request, f'Error updating bill: {str(e)}')
     
-    # Check if user is authenticated and has the appropriate role
-    if request.user.is_authenticated:
-        if request.user.groups.filter(name='Doctors').exists():
-            base_template = 'doctor/base_doctor.html'
-        elif request.user.groups.filter(name='Administrators').exists():
-            base_template = 'hosp_admin/base_admin.html'
-        else:
-            base_template = 'staff/base_staff.html'
-    else:
-        base_template = 'staff/base_staff.html'
-
     context = {
-        'base_template': base_template,
         'bill': bill,
         'payment_status_choices': payment_status_choices
     }
@@ -805,19 +753,7 @@ def view_patient(request, patient_id):
     patient = get_object_or_404(Patient, id=patient_id)
     medical_records = MedicalRecord.objects.filter(patient=patient).order_by('-record_date')
 
-    # Check if user is authenticated and has the appropriate role
-    if request.user.is_authenticated:
-        if request.user.groups.filter(name='Doctors').exists():
-            base_template = 'doctor/base_doctor.html'
-        elif request.user.groups.filter(name='Administrators').exists():
-            base_template = 'hosp_admin/base_admin.html'
-        else:
-            base_template = 'staff/base_staff.html'
-    else:
-        base_template = 'staff/base_staff.html'
-
     context = {
-        'base_template': base_template,
         'patient': patient,
         'medical_records': medical_records
     }
@@ -860,19 +796,7 @@ def edit_patient(request, patient_id):
         except Exception as e:
             messages.error(request, f'Error updating patient: {str(e)}')
 
-    # Check if user is authenticated and has the appropriate role
-    if request.user.is_authenticated:
-        if request.user.groups.filter(name='Doctors').exists():
-            base_template = 'doctor/base_doctor.html'
-        elif request.user.groups.filter(name='Administrators').exists():
-            base_template = 'hosp_admin/base_admin.html'
-        else:
-            base_template = 'staff/base_staff.html'
-    else:
-        base_template = 'staff/base_staff.html'
-    
     context = {
-        'base_template': base_template,
         'patient': patient,
         'blood_groups': blood_groups
     }
@@ -892,19 +816,7 @@ def delete_patient(request, patient_id):
 @login_required
 def view_appointment(request, appointment_id):
     appointment = get_object_or_404(Appointment, id=appointment_id)
-
-    # Check if user is authenticated and has the appropriate role
-    if request.user.is_authenticated:
-        if request.user.groups.filter(name='Doctors').exists():
-            base_template = 'doctor/base_doctor.html'
-        elif request.user.groups.filter(name='Administrators').exists():
-            base_template = 'hosp_admin/base_admin.html'
-        else:
-            base_template = 'staff/base_staff.html'
-    else:
-        base_template = 'staff/base_staff.html'
     context = {
-        'base_template': base_template,
         'appointment': appointment
     }
     return render(request, 'shared/view_appointment.html', context)
@@ -929,19 +841,8 @@ def edit_appointment(request, appointment_id):
             
         except Exception as e:
             messages.error(request, f'Error updating appointment: {str(e)}')
-    # Check if user is authenticated and has the appropriate role
-    if request.user.is_authenticated:
-        if request.user.groups.filter(name='Doctors').exists():
-            base_template = 'doctor/base_doctor.html'
-        elif request.user.groups.filter(name='Administrators').exists():
-            base_template = 'hosp_admin/base_admin.html'
-        else:
-            base_template = 'staff/base_staff.html'
-    else:
-        base_template = 'staff/base_staff.html'
 
     context = {
-        'base_template': base_template,
         'appointment': appointment,
         'doctors': DoctorProfile.objects.all(),
         'patients': Patient.objects.all(),
@@ -1037,19 +938,7 @@ def staff_dashboard(request):
 def manage_treatments(request):
     treatments = Treatment.objects.all().order_by('-created_at')
 
-    # Check if user is authenticated and has the appropriate role
-    if request.user.is_authenticated:
-        if request.user.groups.filter(name='Doctors').exists():
-            base_template = 'doctor/base_doctor.html'
-        elif request.user.groups.filter(name='Administrators').exists():
-            base_template = 'hosp_admin/base_admin.html'
-        else:
-            base_template = 'staff/base_staff.html'
-    else:
-        base_template = 'staff/base_staff.html'
-
     context = {
-        'base_template': base_template,
         'treatments': treatments,
         'doctors': DoctorProfile.objects.all(),
         'patients': Patient.objects.all()
@@ -1061,19 +950,7 @@ def manage_treatments(request):
 def view_treatment(request, treatment_id):
     treatment = get_object_or_404(Treatment, id=treatment_id)
 
-    # Check if user is authenticated and has the appropriate role
-    if request.user.is_authenticated:
-        if request.user.groups.filter(name='Doctors').exists():
-            base_template = 'doctor/base_doctor.html'
-        elif request.user.groups.filter(name='Administrators').exists():
-            base_template = 'hosp_admin/base_admin.html'
-        else:
-            base_template = 'staff/base_staff.html'
-    else:
-        base_template = 'staff/base_staff.html'
-
     context = {
-        'base_template': base_template,
         'treatment': treatment
     }
     return render(request, 'shared/view_treatment.html', context)
@@ -1100,19 +977,7 @@ def edit_treatment(request, treatment_id):
         except Exception as e:
             messages.error(request, f'Error updating treatment: {str(e)}')
 
-    # Check if user is authenticated and has the appropriate role
-    if request.user.is_authenticated:
-        if request.user.groups.filter(name='Doctors').exists():
-            base_template = 'doctor/base_doctor.html'
-        elif request.user.groups.filter(name='Administrators').exists():
-            base_template = 'hosp_admin/base_admin.html'
-        else:
-            base_template = 'staff/base_staff.html'
-    else:
-        base_template = 'staff/base_staff.html'
-    
     context = {
-        'base_template': base_template,
         'treatment': treatment,
         'doctors': DoctorProfile.objects.all(),
         'patients': Patient.objects.all()
@@ -1160,19 +1025,7 @@ def add_treatment(request):
         except Exception as e:
             messages.error(request, f'Error adding treatment: {str(e)}')
 
-    # Check if user is authenticated and has the appropriate role
-    if request.user.is_authenticated:
-        if request.user.groups.filter(name='Doctors').exists():
-            base_template = 'doctor/base_doctor.html'
-        elif request.user.groups.filter(name='Administrators').exists():
-            base_template = 'hosp_admin/base_admin.html'
-        else:
-            base_template = 'staff/base_staff.html'
-    else:
-        base_template = 'staff/base_staff.html'
-    
     context = {
-        'base_template': base_template,
         'doctors': DoctorProfile.objects.all(),
         'patients': Patient.objects.all()
     }
