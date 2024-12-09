@@ -15,6 +15,7 @@ from django.conf import settings
 from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.views import View
 from django.db.models import Sum
+from django.utils import timezone
 
 def home(request):
     doctors = DoctorProfile.objects.all()
@@ -471,23 +472,33 @@ def manage_patients(request):
 @user_passes_test(lambda u: u.groups.filter(name__in=['Staff', 'Administrators', 'Doctors']).exists())
 def manage_appointments(request):
     if request.method == 'POST':
-        try:
-            appointment = Appointment(
-                patient_id=request.POST['patient'],
-                doctor_id=request.POST['doctor'],
-                appointment_date=request.POST['appointment_date'],
-                appointment_time=request.POST['appointment_time'],
-                notes=request.POST.get('notes', ''),
-                status='SCHEDULED'
-            )
-            appointment.save()
-            messages.success(request, 'Appointment scheduled successfully!')
+        # Get form data
+        doctor_id = request.POST.get('doctor')
+        appointment_date = request.POST.get('appointment_date')
+        appointment_time = request.POST.get('appointment_time')
+
+        # Check if the appointment time is in the past
+        appointment_datetime = timezone.datetime.strptime(f"{appointment_date} {appointment_time}", "%Y-%m-%d %H:%M")
+        if appointment_datetime < timezone.now():
+            messages.error(request, "You cannot book an appointment in the past.")
             return redirect('manage_appointments')
-            
-        except Exception as e:
-            messages.error(request, f'Error scheduling appointment: {str(e)}')
+
+        # Check doctor's availability
+        doctor = doctor.objects.get(id=doctor_id)
+        if not doctor.is_available(appointment_datetime):
+            messages.error(request, "The selected doctor is not available at this time.")
             return redirect('manage_appointments')
-    
+
+        # Create the appointment
+        Appointment.objects.create(
+            doctor=doctor,
+            appointment_date=appointment_date,
+            appointment_time=appointment_time,
+            # ... other fields ...
+        )
+        messages.success(request, "Appointment scheduled successfully.")
+        return redirect('manage_appointments')
+
     # Check if user is authenticated and has the appropriate role
     if request.user.is_authenticated:
         if request.user.groups.filter(name='Doctors').exists():

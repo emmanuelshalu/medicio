@@ -47,6 +47,23 @@ class DoctorProfile(models.Model):
     def __str__(self):
         return f"Dr. {self.user.get_full_name()}"
 
+    def is_available(self, appointment_datetime):
+        """Check if the doctor is available at the given appointment datetime."""
+        # Get the day of the week (0=Monday, 6=Sunday)
+        day_of_week = appointment_datetime.weekday()
+        
+        # Get the time from the appointment datetime
+        appointment_time = appointment_datetime.time()
+
+        # Check if there is an availability slot for this doctor on the specified day
+        availability_slots = self.availabilities.filter(day_of_week=day_of_week, is_available=True)
+
+        for slot in availability_slots:
+            if slot.start_time <= appointment_time <= slot.end_time:
+                return True  # Doctor is available during this time slot
+
+        return False  # No available slot found
+
 class StaffProfile(models.Model):
     """Profile for staff members"""
     user = models.OneToOneField(User, on_delete=models.CASCADE)
