@@ -585,16 +585,28 @@ def manage_bills(request):
     return render(request, 'shared/manage_bills.html', context)
 
 @login_required
-@admin_required
+@user_passes_test(lambda u: u.groups.filter(name__in=['Staff', 'Administrators']).exists())
 def view_bill(request, bill_id):
     bill = get_object_or_404(Bill, id=bill_id)
+    
+    # Check if user is authenticated and has the appropriate role
+    if request.user.is_authenticated:
+        if request.user.groups.filter(name='Doctors').exists():
+            base_template = 'doctor/base_doctor.html'
+        elif request.user.groups.filter(name='Administrators').exists():
+            base_template = 'hosp_admin/base_admin.html'
+        else:
+            base_template = 'staff/base_staff.html'
+    else:
+        base_template = 'staff/base_staff.html'
     context = {
+        'base_template': base_template,
         'bill': bill,
     }
     return render(request, 'shared/view_bill.html', context)
 
 @login_required
-@admin_required
+@user_passes_test(lambda u: u.groups.filter(name__in=['Staff', 'Administrators']).exists())
 def create_bill(request):
     if request.method == 'POST':
         try:
@@ -618,15 +630,27 @@ def create_bill(request):
     
     # Get only treatments that don't have bills yet
     treatments = Treatment.objects.filter(bill__isnull=True).select_related('patient', 'doctor')
+
+    # Check if user is authenticated and has the appropriate role
+    if request.user.is_authenticated:
+        if request.user.groups.filter(name='Doctors').exists():
+            base_template = 'doctor/base_doctor.html'
+        elif request.user.groups.filter(name='Administrators').exists():
+            base_template = 'hosp_admin/base_admin.html'
+        else:
+            base_template = 'staff/base_staff.html'
+    else:
+        base_template = 'staff/base_staff.html'
     
     context = {
+        'base_template': base_template,
         'treatments': treatments,
         'today': date.today()
     }
     return render(request, 'shared/create_bill.html', context)
 
 @login_required
-@admin_required
+@user_passes_test(lambda u: u.groups.filter(name__in=['Staff', 'Administrators']).exists())
 def edit_bill(request, bill_id):
     bill = get_object_or_404(Bill, id=bill_id)
     payment_status_choices = Bill.PAYMENT_STATUS
@@ -643,14 +667,26 @@ def edit_bill(request, bill_id):
         except Exception as e:
             messages.error(request, f'Error updating bill: {str(e)}')
     
+    # Check if user is authenticated and has the appropriate role
+    if request.user.is_authenticated:
+        if request.user.groups.filter(name='Doctors').exists():
+            base_template = 'doctor/base_doctor.html'
+        elif request.user.groups.filter(name='Administrators').exists():
+            base_template = 'hosp_admin/base_admin.html'
+        else:
+            base_template = 'staff/base_staff.html'
+    else:
+        base_template = 'staff/base_staff.html'
+
     context = {
+        'base_template': base_template,
         'bill': bill,
         'payment_status_choices': payment_status_choices
     }
     return render(request, 'shared/edit_bill.html', context)
 
 @login_required
-@admin_required
+@user_passes_test(lambda u: u.groups.filter(name__in=['Staff', 'Administrators']).exists())
 def record_payment(request, bill_id):
     if request.method == 'POST':
         bill = get_object_or_404(Bill, id=bill_id)
