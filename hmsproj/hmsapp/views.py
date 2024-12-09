@@ -310,7 +310,19 @@ def add_treatment(request, appointment_id):
         messages.success(request, 'Treatment record added successfully!')
         return redirect('doctor_dashboard')
     
+    # Check if user is authenticated and has the appropriate role
+    if request.user.is_authenticated:
+        if request.user.groups.filter(name='Doctors').exists():
+            base_template = 'doctor/base_doctor.html'
+        elif request.user.groups.filter(name='Administrators').exists():
+            base_template = 'hosp_admin/base_admin.html'
+        else:
+            base_template = 'staff/base_staff.html'
+    else:
+        base_template = 'staff/base_staff.html'
+
     context = {
+        'base_template': base_template,
         'appointment': appointment,
         'patient': appointment.patient
     }
@@ -588,7 +600,6 @@ def manage_bills(request):
 @user_passes_test(lambda u: u.groups.filter(name__in=['Staff', 'Administrators']).exists())
 def view_bill(request, bill_id):
     bill = get_object_or_404(Bill, id=bill_id)
-    
     # Check if user is authenticated and has the appropriate role
     if request.user.is_authenticated:
         if request.user.groups.filter(name='Doctors').exists():
