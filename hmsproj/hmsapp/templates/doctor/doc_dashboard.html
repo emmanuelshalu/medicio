@@ -36,13 +36,13 @@
                         <td>{{ appointment.appointment_date }}</td>
                         <td>{{ appointment.appointment_time }}</td>
                         <td>
-                            <a href="">
+                            <a href="{% url 'view_patient' appointment.patient.id %}">
                                 {{ appointment.patient.patient_name }}
                             </a>
                         </td>
                         <td>{{ appointment.reason }}</td>
                         <td>
-                            <a href="" class="btn btn-primary btn-sm">
+                            <a href="{% url 'add_treatment' %}" class="btn btn-primary btn-sm">
                                 Add Treatment
                             </a>
                         </td>

@@ -222,6 +222,18 @@
                                 <i class="bi bi-calendar-check"></i> Appointments
                             </a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'manage_patients' %}active{% endif %}" 
+                               href="{% url 'manage_patients' %}">
+                                <i class="bi bi-person-lines-fill"></i> Patients
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'manage_treatments' %}active{% endif %}" 
+                               href="{% url 'manage_treatments' %}">
+                                <i class="bi bi-heart-pulse"></i> Treatments
+                            </a>
+                        </li>
                         <li class="nav-item mt-3">
                             <form method="post" action="{% url 'logout' %}">
                                 {% csrf_token %}

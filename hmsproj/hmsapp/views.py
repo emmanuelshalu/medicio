@@ -16,6 +16,35 @@ from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.views import View
 from django.db.models import Sum
 from django.utils import timezone
+from django.utils.timezone import datetime
+
+
+
+def get_doctor_availability(doctor, day_of_week):
+    """
+    Get doctor's availability for a given day. Returns default availability if none is set.
+    Default availability is Mon-Sat: 9-12 and 15-17
+    Returns a list of tuples containing (start_time, end_time)
+    """
+    # Check if custom availability exists
+    custom_availability = DoctorAvailability.objects.filter(
+        doctor=doctor,
+        day_of_week=day_of_week,
+        is_available=True
+    )
+    
+    if custom_availability.exists():
+        return [(slot.start_time, slot.end_time) for slot in custom_availability]
+    
+    # Return default availability for Monday-Saturday
+    if day_of_week < 6:  # 0-5 represents Monday-Saturday
+        return [
+            (time(9, 0), time(12, 0)),   # Morning slot: 9 AM - 12 PM
+            (time(15, 0), time(17, 0))   # Evening slot: 3 PM - 5 PM
+        ]
+    
+    # Sunday (day_of_week = 6) has no availability by default
+    return []
 
 def home(request):
     doctors = DoctorProfile.objects.all()
@@ -468,21 +497,16 @@ def manage_appointments(request):
             # Get doctor's availability
             doctor = DoctorProfile.objects.get(id=doctor_id)
             day_of_week = appointment_datetime.weekday()
+            appointment_time = appointment_datetime.time()
             
-            # Get doctor's availability for this day
-            availability = DoctorAvailability.objects.filter(
-                doctor=doctor,
-                day_of_week=day_of_week,
-                is_available=True
-            ).first()
+            # Get availability slots for the day
+            availability_slots = get_doctor_availability(doctor, day_of_week)
             
-            # If no specific availability, use default (9 AM to 5 PM)
-            if not availability:
-                default_start = time(9, 0)  # 9 AM
-                default_end = time(17, 0)   # 5 PM
-                is_available = default_start <= appointment_datetime.time() <= default_end
-            else:
-                is_available = availability.start_time <= appointment_datetime.time() <= availability.end_time
+            # Check if the appointment time falls within any available slot
+            is_available = any(
+                start_time <= appointment_time <= end_time
+                for start_time, end_time in availability_slots
+            )
             
             if not is_available:
                 messages.error(request, "Selected time is outside doctor's availability")
@@ -1098,77 +1122,63 @@ def find_next_slot(request):
         doctor = DoctorProfile.objects.get(id=doctor_id)
         current_datetime = timezone.now()
         
-        # Get doctor's availability for the current weekday
-        current_weekday = current_datetime.weekday()
-        availability = DoctorAvailability.objects.filter(
-            doctor=doctor,
-            day_of_week=current_weekday,
-            is_available=True
-        ).first()
-
-        # If no availability found for current day, look for next available day
-        days_checked = 0
-        while not availability and days_checked < 7:
-            current_datetime += timedelta(days=1)
-            current_weekday = current_datetime.weekday()
-            availability = DoctorAvailability.objects.filter(
-                doctor=doctor,
-                day_of_week=current_weekday,
-                is_available=True
-            ).first()
-            days_checked += 1
-
-        if not availability:
-            return JsonResponse({
-                'success': False, 
-                'message': 'No available slots found in the next 7 days'
-            })
-
-        # Get all appointments for the doctor on the found day
-        day_appointments = Appointment.objects.filter(
-            doctor=doctor,
-            appointment_date=current_datetime.date(),
-            status='SCHEDULED'
-        ).order_by('appointment_time')
-
-        # Default slot duration in minutes
-        slot_duration = 30
-
-        # Start from doctor's availability start time
-        current_time = availability.start_time
-        if current_datetime.date() == timezone.now().date():
-            # If it's today, start from current time (rounded up to next slot)
-            current_time = max(
-                current_time,
-                (timezone.now() + timedelta(minutes=(slot_duration - timezone.now().minute % slot_duration))).time()
-            )
-
-        # Find the first available slot
-        while current_time < availability.end_time:
-            slot_datetime = datetime.combine(current_datetime.date(), current_time)
+        # Look for slots in the next 7 days
+        for days_ahead in range(7):
+            check_date = current_datetime.date() + timedelta(days=days_ahead)
+            current_weekday = check_date.weekday()
             
-            # Check if this slot conflicts with any existing appointment
-            slot_is_available = not day_appointments.filter(
-                appointment_time__gte=current_time,
-                appointment_time__lt=(datetime.combine(date.min, current_time) + timedelta(minutes=slot_duration)).time()
-            ).exists()
+            # Get availability slots for the day
+            availability_slots = get_doctor_availability(doctor, current_weekday)
+            
+            if not availability_slots:
+                continue
+                
+            # Get all appointments for the doctor on this day
+            day_appointments = Appointment.objects.filter(
+                doctor=doctor,
+                appointment_date=check_date,
+                status='SCHEDULED'
+            ).order_by('appointment_time')
 
-            if slot_is_available:
-                return JsonResponse({
-                    'success': True,
-                    'date': current_datetime.date().isoformat(),
-                    'time': current_time.strftime('%H:%M'),
-                    'message': 'Available slot found'
-                })
+            # Default slot duration in minutes
+            slot_duration = 30
 
-            # Move to next slot
-            slot_datetime += timedelta(minutes=slot_duration)
-            current_time = slot_datetime.time()
+            # Check each availability slot
+            for start_time, end_time in availability_slots:
+                current_time = start_time
+                if check_date == timezone.now().date():
+                    # If it's today, start from current time (rounded up to next slot)
+                    current_time = max(
+                        current_time,
+                        (timezone.now() + timedelta(minutes=(slot_duration - timezone.now().minute % slot_duration))).time()
+                    )
 
-        # If we get here, no slots were available on this day
+                # Find the first available slot
+                while current_time < end_time:
+                    slot_datetime = datetime.combine(check_date, current_time)
+                    
+                    # Check if this slot conflicts with any existing appointment
+                    slot_is_available = not day_appointments.filter(
+                        appointment_time__gte=current_time,
+                        appointment_time__lt=(datetime.combine(date.min, current_time) + timedelta(minutes=slot_duration)).time()
+                    ).exists()
+
+                    if slot_is_available:
+                        return JsonResponse({
+                            'success': True,
+                            'date': check_date.isoformat(),
+                            'time': current_time.strftime('%H:%M'),
+                            'message': 'Available slot found'
+                        })
+
+                    # Move to next slot
+                    slot_datetime += timedelta(minutes=slot_duration)
+                    current_time = slot_datetime.time()
+
+        # If we get here, no slots were available in the next 7 days
         return JsonResponse({
             'success': False,
-            'message': 'No available slots found for the selected day'
+            'message': 'No available slots found in the next 7 days'
         })
 
     except DoctorProfile.DoesNotExist:
