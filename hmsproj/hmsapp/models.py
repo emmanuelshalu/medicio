@@ -9,6 +9,7 @@ from datetime import date, datetime, timedelta
 from hmsapp.utils.google_calendar import get_google_calendar_service, create_calendar_event, delete_calendar_event
 from django.db.models import Count, Avg, Sum, F
 from django.db.models.functions import TruncMonth, TruncYear, ExtractMonth
+from decimal import Decimal
 
 # Phone number validator
 phone_regex = RegexValidator(
@@ -275,7 +276,13 @@ class Bill(models.Model):
 
     @property
     def remaining_amount(self):
+        """Calculate remaining amount to be paid"""
         return self.amount - self.paid_amount
+
+    @property
+    def payments(self):
+        """Return all payments associated with this bill"""
+        return self.payment_set.all().order_by('-payment_date')
 
     @property
     def is_overdue(self):
@@ -421,3 +428,50 @@ class ReportConfiguration(models.Model):
 
     def __str__(self):
         return f"{self.name} ({self.get_report_type_display()})"
+
+# Add this new model after the Bill model
+class Payment(models.Model):
+    """Model to track individual payments for bills"""
+    
+    PAYMENT_METHODS = [
+        ('CASH', 'Cash'),
+        ('CREDIT_CARD', 'Credit Card'),
+        ('DEBIT_CARD', 'Debit Card'),
+        ('INSURANCE', 'Insurance'),
+        ('BANK_TRANSFER', 'Bank Transfer'),
+    ]
+    
+    bill = models.ForeignKey(Bill, on_delete=models.CASCADE, related_name='payment_set')
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    payment_date = models.DateField()
+    payment_method = models.CharField(max_length=20, choices=PAYMENT_METHODS)
+    transaction_id = models.CharField(max_length=100, blank=True)
+    notes = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-payment_date']
+
+    def __str__(self):
+        return f"Payment of ₹{self.amount} for Bill #{self.bill.id}"
+
+    def save(self, *args, **kwargs):
+        # Update the bill's paid amount when a payment is saved
+        super().save(*args, **kwargs)
+        
+        # Update bill's paid amount and status
+        bill = self.bill
+        total_paid = bill.payment_set.aggregate(total=models.Sum('amount'))['total'] or 0
+        bill.paid_amount = total_paid
+        
+        if total_paid >= bill.amount:
+            bill.payment_status = 'PAID'
+        elif total_paid > 0:
+            bill.payment_status = 'PARTIALLY_PAID'
+        elif bill.due_date < date.today():
+            bill.payment_status = 'OVERDUE'
+        else:
+            bill.payment_status = 'PENDING'
+        
+        bill.save()

@@ -538,10 +538,15 @@ def manage_bills(request):
 @login_required
 @user_passes_test(lambda u: u.groups.filter(name__in=['Staff', 'Administrators']).exists())
 def view_bill(request, bill_id):
+    """
+    View function to display a detailed bill with print capability
+    """
     bill = get_object_or_404(Bill, id=bill_id)
+    
     context = {
         'bill': bill,
     }
+    
     return render(request, 'shared/view_bill.html', context)
 
 @login_required
@@ -616,16 +621,13 @@ def record_payment(request, bill_id):
         try:
             payment_amount = Decimal(request.POST['amount'])
             if payment_amount <= (bill.amount - bill.paid_amount):
-                bill.paid_amount += payment_amount
-                bill.payment_date = date.today()
-                bill.payment_method = request.POST['payment_method']
-                
-                if bill.paid_amount == bill.amount:
-                    bill.payment_status = 'PAID'
-                elif bill.paid_amount > 0:
-                    bill.payment_status = 'PARTIALLY_PAID'
-                
-                bill.save()
+                # Create new payment record
+                Payment.objects.create(
+                    bill=bill,
+                    amount=payment_amount,
+                    payment_date=date.today(),
+                    payment_method=request.POST['payment_method']
+                )
                 messages.success(request, 'Payment recorded successfully!')
             else:
                 messages.error(request, 'Payment amount exceeds remaining balance!')
