@@ -345,3 +345,46 @@ def sync_appointment_to_calendar(sender, instance, created, **kwargs):
             if event_id:
                 # Update the appointment with the new event ID without triggering the signal again
                 Appointment.objects.filter(pk=instance.pk).update(google_calendar_event_id=event_id)
+
+class UserActivity(models.Model):
+    """Model to track user activities"""
+    
+    ACTIVITY_TYPES = [
+        ('LOGIN', 'Login'),
+        ('LOGOUT', 'Logout'),
+        ('CREATE', 'Create'),
+        ('UPDATE', 'Update'),
+        ('DELETE', 'Delete'),
+        ('VIEW', 'View'),
+    ]
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    activity_type = models.CharField(max_length=20, choices=ACTIVITY_TYPES)
+    activity_description = models.TextField()
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    user_agent = models.CharField(max_length=255, null=True, blank=True)
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-timestamp']
+        verbose_name_plural = 'User Activities'
+
+    def __str__(self):
+        return f"{self.user.username} - {self.activity_type} - {self.timestamp}"
+
+class LoginActivity(models.Model):
+    """Model to track user login activities"""
+    
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    login_datetime = models.DateTimeField(auto_now_add=True)
+    logout_datetime = models.DateTimeField(null=True, blank=True)
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    user_agent = models.CharField(max_length=255, null=True, blank=True)
+    session_key = models.CharField(max_length=40, null=True, blank=True)
+    
+    class Meta:
+        ordering = ['-login_datetime']
+        verbose_name_plural = 'Login Activities'
+
+    def __str__(self):
+        return f"{self.user.username} - {self.login_datetime}"

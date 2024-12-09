@@ -60,6 +60,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'hmsapp.middleware.RoleMiddleware',
+    'hmsapp.middleware.ActivityTrackingMiddleware',
 ]
 
 ROOT_URLCONF = 'hmsproj.urls'

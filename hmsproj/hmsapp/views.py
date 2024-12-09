@@ -6,7 +6,7 @@ from django.contrib.auth.models import User, Group
 from django.http import JsonResponse
 from datetime import date, datetime, timedelta, time
 from .models import *
-from .decorators import admin_required, doctor_required, staff_required
+from .decorators import admin_required, doctor_required, staff_required, track_activity
 from decimal import Decimal
 from django.core.files.storage import FileSystemStorage
 from google_auth_oauthlib.flow import Flow
@@ -17,6 +17,9 @@ from django.views import View
 from django.db.models import Sum
 from django.utils import timezone
 from django.utils.timezone import datetime
+from django.contrib.auth import signals
+from django.db.models import Q
+from django.core.paginator import Paginator
 
 
 
@@ -294,58 +297,6 @@ def manage_availability(request):
         'availability': availability
     }
     return render(request, 'shared/availability.html', context)
-
-@user_passes_test(is_doctor)
-def view_patient(request, patient_id):
-    doctor = get_object_or_404(DoctorProfile, user=request.user)
-    patient = get_object_or_404(Patient, patient_id=patient_id)
-    
-    if request.method == 'POST' and 'upload_record' in request.POST:
-        MedicalRecord.objects.create(
-            patient=patient,
-            record_date=request.POST.get('record_date'),
-            description=request.POST.get('record_description'),
-            document=request.FILES['record_document']
-        )
-        messages.success(request, 'Medical record uploaded successfully!')
-        return redirect('view_patient', patient_id=patient_id)
-    
-    treatments = Treatment.objects.filter(doctor=doctor, patient=patient)
-    appointments = Appointment.objects.filter(doctor=doctor, patient=patient)
-    
-    context = {
-        'patient': patient,
-        'treatments': treatments,
-        'appointments': appointments
-    }
-    return render(request, 'shared/patient_detail.html', context)
-
-@user_passes_test(is_doctor)
-def add_treatment(request, appointment_id):
-    doctor = get_object_or_404(DoctorProfile, user=request.user)
-    appointment = get_object_or_404(Appointment, id=appointment_id, doctor=doctor)
-    
-    if request.method == 'POST':
-        Treatment.objects.create(
-            patient=appointment.patient,
-            doctor=doctor,
-            appointment=appointment,
-            chief_complaint=request.POST.get('chief_complaint'),
-            examination_findings=request.POST.get('examination_findings'),
-            diagnosis=request.POST.get('diagnosis'),
-            prescription=request.POST.get('prescription'),
-            notes=request.POST.get('notes')
-        )
-        appointment.status = 'COMPLETED'
-        appointment.save()
-        messages.success(request, 'Treatment record added successfully!')
-        return redirect('doctor_dashboard')
-    
-    context = {
-        'appointment': appointment,
-        'patient': appointment.patient
-    }
-    return render(request, 'shared/add_treatment.html', context)
 
 def is_admin_or_superadmin(user):
     return user.is_authenticated and user.userprofile.role.name in ['SUPER_ADMIN', 'ADMIN']
@@ -1185,3 +1136,83 @@ def find_next_slot(request):
         return JsonResponse({'success': False, 'message': 'Doctor not found'})
     except Exception as e:
         return JsonResponse({'success': False, 'message': str(e)})
+
+@login_required
+@admin_required
+def view_user_activities(request):
+    """View for administrators to see user activities"""
+    
+    # Get filter parameters
+    user_filter = request.GET.get('user')
+    activity_type = request.GET.get('activity_type')
+    date_from = request.GET.get('date_from')
+    date_to = request.GET.get('date_to')
+    
+    # Base queryset
+    activities = UserActivity.objects.all()
+    
+    # Apply filters
+    if user_filter:
+        activities = activities.filter(user__username__icontains=user_filter)
+    if activity_type:
+        activities = activities.filter(activity_type=activity_type)
+    if date_from:
+        activities = activities.filter(timestamp__gte=date_from)
+    if date_to:
+        activities = activities.filter(timestamp__lte=date_to)
+    
+    # Pagination
+    paginator = Paginator(activities, 50)  # Show 50 activities per page
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    context = {
+        'page_obj': page_obj,
+        'activity_types': UserActivity.ACTIVITY_TYPES,
+        'users': User.objects.all(),
+    }
+    
+    return render(request, 'hosp_admin/user_activities.html', context)
+
+@login_required
+@admin_required
+def view_login_activities(request):
+    """View for administrators to see login activities"""
+    
+    # Get filter parameters
+    user_filter = request.GET.get('user')
+    date_from = request.GET.get('date_from')
+    date_to = request.GET.get('date_to')
+    
+    # Base queryset
+    login_activities = LoginActivity.objects.all()
+    
+    # Apply filters
+    if user_filter:
+        login_activities = login_activities.filter(user__username__icontains=user_filter)
+    if date_from:
+        login_activities = login_activities.filter(login_datetime__gte=date_from)
+    if date_to:
+        login_activities = login_activities.filter(login_datetime__lte=date_to)
+    
+    # Pagination
+    paginator = Paginator(login_activities, 50)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    context = {
+        'page_obj': page_obj,
+        'users': User.objects.all(),
+    }
+    
+    return render(request, 'hosp_admin/login_activities.html', context)
+
+@track_activity('CREATE', 'Created new appointment')
+def create_appointment(request):
+    # Your view code here
+    pass
+
+@track_activity('UPDATE', 'Updated patient information')
+def update_patient(request):
+    # Your view code here
+    pass

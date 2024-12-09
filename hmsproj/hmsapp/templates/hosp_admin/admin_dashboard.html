@@ -112,4 +112,23 @@
         </div>
     </div>
 </div>
+
+<!-- Add this in the dashboard menu/navigation section -->
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Activity Monitoring</h5>
+                <div class="list-group">
+                    <a href="{% url 'view_user_activities' %}" class="list-group-item list-group-item-action">
+                        <i class="fas fa-history"></i> User Activities Log
+                    </a>
+                    <a href="{% url 'view_login_activities' %}" class="list-group-item list-group-item-action">
+                        <i class="fas fa-sign-in-alt"></i> Login Activities Log
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %} 

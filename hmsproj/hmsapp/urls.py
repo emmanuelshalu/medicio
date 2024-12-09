@@ -53,6 +53,8 @@ urlpatterns = [
     path('hosp_admin/bills/create/', views.create_bill, name='create_bill'),
     path('hosp_admin/bills/<int:bill_id>/delete/', views.delete_bill, name='delete_bill'),
     path('hosp_admin/bills/<int:bill_id>/record-payment/', views.record_payment, name='record_payment'),
+    path('hosp_admin/user-activities/', views.view_user_activities, name='view_user_activities'),
+    path('hosp_admin/login-activities/', views.view_login_activities, name='view_login_activities'),
 
     # Staff URLs
     path('staff/dashboard/', views.staff_dashboard, name='staff_dashboard'),
