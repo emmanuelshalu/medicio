@@ -16,6 +16,10 @@ urlpatterns = [
     path('book-appointment/', views.book_appointment, name='book_appointment'),
     path('get-doctors/<int:specialty_id>/', views.get_doctors, name='get_doctors'),
 
+    # Shared URLs
+    path('hosp_admin/doctors/<int:doctor_id>/view/', views.view_doctor, name='view_doctor'),
+    path('hosp_admin/patients/', views.manage_patients, name='manage_patients'),
+
     # Doctor URLs
     path('doctor/dashboard/', views.doctor_dashboard, name='doctor_dashboard'),
     path('doctor/profile/', views.doctor_profile, name='doctor_profile'),
@@ -29,16 +33,14 @@ urlpatterns = [
     # Hospital Admin URLs
     path('hosp_admin/dashboard/', views.admin_dashboard, name='admin_dashboard'),
     path('hosp_admin/doctors/', views.manage_doctors, name='manage_doctors'),
-    path('hosp_admin/doctors/<int:doctor_id>/view/', views.view_doctor, name='view_doctor'),
+
     path('hosp_admin/doctors/<int:doctor_id>/edit/', views.edit_doctor, name='edit_doctor'),
     path('hosp_admin/doctors/<int:doctor_id>/delete/', views.delete_doctor, name='delete_doctor'),
-    path('hosp_admin/patients/', views.manage_patients, name='manage_patients'),
+
     # path('hosp_admin/patients/add/', views.add_patient, name='add_patient'),
     path('hosp_admin/patients/<int:patient_id>/view/', views.view_patient, name='view_patient'),
     path('hosp_admin/patients/<int:patient_id>/edit/', views.edit_patient, name='edit_patient'),
     path('hosp_admin/patients/<int:patient_id>/delete/', views.delete_patient, name='delete_patient'),
-    # path('hosp_admin/admins/', views.manage_admins, name='manage_admins'),
-    # path('hosp_admin/users/', views.manage_users, name='manage_users'),
     path('hosp_admin/appointments/', views.manage_appointments, name='manage_appointments'),
     path('hosp_admin/appointments/<int:appointment_id>/view/', views.view_appointment, name='view_appointment'),
     path('hosp_admin/appointments/<int:appointment_id>/edit/', views.edit_appointment, name='edit_appointment'),

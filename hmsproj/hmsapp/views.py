@@ -370,61 +370,26 @@ def manage_doctors(request):
 @login_required
 @user_passes_test(lambda u: u.groups.filter(name__in=['Staff', 'Administrators', 'Doctors']).exists())
 def manage_patients(request):
-    if request.method == 'POST':
-        print("POST request received")
-        print("Form data:", request.POST)
-        try:
-            # Create User account
-            user = User.objects.create_user(
-                username=request.POST['email'],
-                email=request.POST['email'],
-                password=request.POST['password'],
-                first_name=request.POST['first_name'],
-                last_name=request.POST['last_name']
-            )
-            print("User created:", user)
-            
-            # Calculate date of birth from age
-            age = int(request.POST['age'])
-            date_of_birth = datetime.now() - timedelta(days=age*365)
-            
-            # Create Patient profile with only the fields that exist in your model
-            patient = Patient(
-                user=user,
-                patient_name=f"{user.first_name} {user.last_name}",
-                date_of_birth=date_of_birth,
-                blood_group=request.POST['blood_group'],
-                gender=request.POST['gender'].upper(),
-                nationality='Not Specified',
-                phone_number=request.POST['phone_number'],
-                address=request.POST['address'],
-                emergency_contact_name='Not Specified',
-                emergency_contact_phone='Not Specified',
-                medical_history=''
-            )
-            
-            if 'profile_picture' in request.FILES:
-                patient.profile_picture = request.FILES['profile_picture']
-            
-            patient.save()
-            print("Patient created:", patient)
-            messages.success(request, 'Patient added successfully!')
-            return redirect('manage_patients')
-            
-        except Exception as e:
-            print("Error:", str(e))
-            if 'user' in locals():
-                user.delete()
-            messages.error(request, f'Error adding patient: {str(e)}')
-            return redirect('manage_patients')
-        
-    # For GET requests
+    search = request.GET.get('search', '')
+    min_age = request.GET.get('min_age', None)
+    max_age = request.GET.get('max_age', None)
+    gender = request.GET.get('gender', '')
+
     patients = Patient.objects.all()
-    context = {
-        'patients': patients
-    }
-    
-    return render(request, 'shared/manage_patients.html', context)
+
+    if search:
+        patients = patients.filter(Q(user__first_name__icontains=search) | Q(user__last_name__icontains=search) | Q(patient_id__icontains=search))
+
+    if min_age:
+        patients = patients.filter(age__gte=min_age)
+
+    if max_age:
+        patients = patients.filter(age__lte=max_age)
+
+    if gender:
+        patients = patients.filter(gender=gender)
+
+    return render(request, 'shared/manage_patients.html', {'patients': patients, 'request': request})
 
 @login_required
 @user_passes_test(lambda u: u.groups.filter(name__in=['Staff', 'Administrators', 'Doctors']).exists())

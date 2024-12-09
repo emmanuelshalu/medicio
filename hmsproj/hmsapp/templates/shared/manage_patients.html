@@ -23,6 +23,34 @@
 </div>
 {% endif %}
 
+<!-- Add Search Form above the Patients Table -->
+<div class="mb-3">
+    <form id="searchForm" method="GET" action="{% url 'manage_patients' %}">
+        <div class="row">
+            <div class="col-md-4">
+                <input type="text" class="form-control" name="search" placeholder="Search by Name or Patient ID" value="{{ request.GET.search }}">
+            </div>
+            <div class="col-md-2">
+                <input type="number" class="form-control" name="min_age" placeholder="Min Age" value="{{ request.GET.min_age }}">
+            </div>
+            <div class="col-md-2">
+                <input type="number" class="form-control" name="max_age" placeholder="Max Age" value="{{ request.GET.max_age }}">
+            </div>
+            <div class="col-md-2">
+                <select class="form-select" name="gender">
+                    <option value="">Select Gender</option>
+                    <option value="M" {% if request.GET.gender == 'M' %}selected{% endif %}>Male</option>
+                    <option value="F" {% if request.GET.gender == 'F' %}selected{% endif %}>Female</option>
+                    <option value="O" {% if request.GET.gender == 'O' %}selected{% endif %}>Other</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary">Search</button>
+            </div>
+        </div>
+    </form>
+</div>
+
 <!-- Patients Table -->
 <div class="card shadow mb-4">
     <div class="card-body">

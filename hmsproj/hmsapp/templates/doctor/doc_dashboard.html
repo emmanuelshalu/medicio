@@ -26,7 +26,7 @@
                         <th>Date</th>
                         <th>Time</th>
                         <th>Patient</th> 
-                        <th>Action</th>
+                        <th>Patient ID</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -39,12 +39,7 @@
                                 {{ appointment.patient.patient_name }}
                             </a>
                         </td>
-                        <td>{{ appointment.reason }}</td>
-                        <td>
-                            <a href="{% url 'add_treatment' %}" class="btn btn-primary btn-sm">
-                                Add Treatment
-                            </a>
-                        </td>
+                        <td>{{ appointment.patient.patient_id }}</td>
                     </tr>
                     {% empty %}
                     <tr>
