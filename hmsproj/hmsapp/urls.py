@@ -51,6 +51,7 @@ urlpatterns = [
     path('hosp_admin/bills/<int:bill_id>/view/', views.view_bill, name='view_bill'),
     path('hosp_admin/bills/<int:bill_id>/edit/', views.edit_bill, name='edit_bill'),
     path('hosp_admin/bills/create/', views.create_bill, name='create_bill'),
+    path('hosp_admin/bills/<int:bill_id>/delete/', views.delete_bill, name='delete_bill'),
     path('hosp_admin/bills/<int:bill_id>/record-payment/', views.record_payment, name='record_payment'),
 
     # Staff URLs
@@ -60,6 +61,12 @@ urlpatterns = [
     path('staff/treatments/<int:treatment_id>/edit/', views.edit_treatment, name='edit_treatment'),
     path('staff/treatments/<int:treatment_id>/delete/', views.delete_treatment, name='delete_treatment'),
     path('staff/treatments/<int:treatment_id>/view/', views.view_treatment, name='view_treatment'),
+
+    # Treatment URLs
+    path('treatment/<int:treatment_id>/view/', views.view_treatment, name='view_treatment'),
+    path('treatment/<int:treatment_id>/edit/', views.edit_treatment, name='edit_treatment'),
+    path('treatment/<int:treatment_id>/delete/', views.delete_treatment, name='delete_treatment'),
+    path('treatment/add/', views.add_treatment, name='add_treatment'),
 ] 
 
 # Serve media files in development

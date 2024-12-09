@@ -1,0 +1,69 @@
+{% extends base_template %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-header">
+            <h3>Edit Treatment</h3>
+        </div>
+        <div class="card-body">
+            <form method="POST">
+                {% csrf_token %}
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="patient" class="form-label">Patient</label>
+                        <select class="form-select" id="patient" name="patient" required>
+                            {% for patient in patients %}
+                                <option value="{{ patient.id }}" {% if patient.id == treatment.patient.id %}selected{% endif %}>
+                                    {{ patient.patient_name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="doctor" class="form-label">Doctor</label>
+                        <select class="form-select" id="doctor" name="doctor" required>
+                            {% for doctor in doctors %}
+                                <option value="{{ doctor.id }}" {% if doctor.id == treatment.doctor.id %}selected{% endif %}>
+                                    Dr. {{ doctor.user.get_full_name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="chief_complaint" class="form-label">Chief Complaint</label>
+                    <textarea class="form-control" id="chief_complaint" name="chief_complaint" rows="3" required>{{ treatment.chief_complaint }}</textarea>
+                </div>
+
+                <div class="mb-3">
+                    <label for="examination_findings" class="form-label">Examination Findings</label>
+                    <textarea class="form-control" id="examination_findings" name="examination_findings" rows="3" required>{{ treatment.examination_findings }}</textarea>
+                </div>
+
+                <div class="mb-3">
+                    <label for="diagnosis" class="form-label">Diagnosis</label>
+                    <textarea class="form-control" id="diagnosis" name="diagnosis" rows="3" required>{{ treatment.diagnosis }}</textarea>
+                </div>
+
+                <div class="mb-3">
+                    <label for="prescription" class="form-label">Prescription</label>
+                    <textarea class="form-control" id="prescription" name="prescription" rows="3" required>{{ treatment.prescription }}</textarea>
+                </div>
+
+                <div class="mb-3">
+                    <label for="notes" class="form-label">Additional Notes</label>
+                    <textarea class="form-control" id="notes" name="notes" rows="3">{{ treatment.notes }}</textarea>
+                </div>
+
+                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                    <a href="{% url 'view_treatment' treatment.id %}" class="btn btn-secondary me-md-2">Cancel</a>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %} 

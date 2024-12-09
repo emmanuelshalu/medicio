@@ -59,11 +59,32 @@
                             <button class="btn btn-sm btn-primary" onclick="editAppointment('{{ appointment.id }}')">
                                 <i class="bi bi-pencil"></i>
                             </button>
-                            <button class="btn btn-sm btn-danger" onclick="deleteAppointment('{{ appointment.id }}')">
+                            <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#deleteAppointment{{ appointment.id }}">
                                 <i class="bi bi-trash"></i>
                             </button>
                         </td>
                     </tr>
+                    <!-- Delete Modal -->
+                    <div class="modal fade" id="deleteAppointment{{ appointment.id }}" tabindex="-1">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title">Confirm Delete</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                </div>
+                                <div class="modal-body">
+                                    Are you sure you want to delete this appointment record?
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                    <form action="{% url 'delete_appointment' appointment.id %}" method="post" class="d-inline">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-danger">Delete</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                     {% endfor %}
                 </tbody>
             </table>

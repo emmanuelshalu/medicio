@@ -698,6 +698,14 @@ def edit_bill(request, bill_id):
 
 @login_required
 @user_passes_test(lambda u: u.groups.filter(name__in=['Staff', 'Administrators']).exists())
+def delete_bill(request, bill_id):
+    bill = get_object_or_404(Bill, id=bill_id)
+    bill.delete()
+    messages.success(request, 'Bill deleted successfully!')
+    return redirect('manage_bills')
+
+@login_required
+@user_passes_test(lambda u: u.groups.filter(name__in=['Staff', 'Administrators']).exists())
 def record_payment(request, bill_id):
     if request.method == 'POST':
         bill = get_object_or_404(Bill, id=bill_id)
@@ -1014,27 +1022,53 @@ def staff_dashboard(request):
     return render(request, 'staff/staff_dashboard.html', context)
 
 @login_required
-@staff_required
+@user_passes_test(lambda u: u.groups.filter(name__in=['Staff', 'Administrators', 'Doctors']).exists())
 def manage_treatments(request):
     treatments = Treatment.objects.all().order_by('-created_at')
+
+    # Check if user is authenticated and has the appropriate role
+    if request.user.is_authenticated:
+        if request.user.groups.filter(name='Doctors').exists():
+            base_template = 'doctor/base_doctor.html'
+        elif request.user.groups.filter(name='Administrators').exists():
+            base_template = 'hosp_admin/base_admin.html'
+        else:
+            base_template = 'staff/base_staff.html'
+    else:
+        base_template = 'staff/base_staff.html'
+
     context = {
+        'base_template': base_template,
         'treatments': treatments,
         'doctors': DoctorProfile.objects.all(),
         'patients': Patient.objects.all()
     }
-    return render(request, 'staff/manage_treatments.html', context)
+    return render(request, 'shared/manage_treatments.html', context)
 
 @login_required
-@staff_required
+@user_passes_test(lambda u: u.groups.filter(name__in=['Staff', 'Administrators', 'Doctors']).exists())
 def view_treatment(request, treatment_id):
     treatment = get_object_or_404(Treatment, id=treatment_id)
+
+    # Check if user is authenticated and has the appropriate role
+    if request.user.is_authenticated:
+        if request.user.groups.filter(name='Doctors').exists():
+            base_template = 'doctor/base_doctor.html'
+        elif request.user.groups.filter(name='Administrators').exists():
+            base_template = 'hosp_admin/base_admin.html'
+        else:
+            base_template = 'staff/base_staff.html'
+    else:
+        base_template = 'staff/base_staff.html'
+
     context = {
+        'base_template': base_template,
         'treatment': treatment
     }
-    return render(request, 'staff/view_treatment.html', context)
+    return render(request, 'shared/view_treatment.html', context)
 
 @login_required
-@staff_required
+@user_passes_test(lambda u: u.groups.filter(name__in=['Staff', 'Administrators', 'Doctors']).exists())
 def edit_treatment(request, treatment_id):
     treatment = get_object_or_404(Treatment, id=treatment_id)
     
@@ -1054,16 +1088,28 @@ def edit_treatment(request, treatment_id):
             
         except Exception as e:
             messages.error(request, f'Error updating treatment: {str(e)}')
+
+    # Check if user is authenticated and has the appropriate role
+    if request.user.is_authenticated:
+        if request.user.groups.filter(name='Doctors').exists():
+            base_template = 'doctor/base_doctor.html'
+        elif request.user.groups.filter(name='Administrators').exists():
+            base_template = 'hosp_admin/base_admin.html'
+        else:
+            base_template = 'staff/base_staff.html'
+    else:
+        base_template = 'staff/base_staff.html'
     
     context = {
+        'base_template': base_template,
         'treatment': treatment,
         'doctors': DoctorProfile.objects.all(),
         'patients': Patient.objects.all()
     }
-    return render(request, 'staff/edit_treatment.html', context)
+    return render(request, 'shared/edit_treatment.html', context)
 
 @login_required
-@staff_required
+@user_passes_test(lambda u: u.groups.filter(name__in=['Staff', 'Administrators', 'Doctors']).exists())
 def delete_treatment(request, treatment_id):
     treatment = get_object_or_404(Treatment, id=treatment_id)
     try:
@@ -1075,7 +1121,7 @@ def delete_treatment(request, treatment_id):
     return redirect('manage_treatments')
 
 @login_required
-@staff_required
+@user_passes_test(lambda u: u.groups.filter(name__in=['Staff', 'Administrators', 'Doctors']).exists())
 def add_treatment(request):
     if request.method == 'POST':
         try:
@@ -1102,12 +1148,24 @@ def add_treatment(request):
             
         except Exception as e:
             messages.error(request, f'Error adding treatment: {str(e)}')
+
+    # Check if user is authenticated and has the appropriate role
+    if request.user.is_authenticated:
+        if request.user.groups.filter(name='Doctors').exists():
+            base_template = 'doctor/base_doctor.html'
+        elif request.user.groups.filter(name='Administrators').exists():
+            base_template = 'hosp_admin/base_admin.html'
+        else:
+            base_template = 'staff/base_staff.html'
+    else:
+        base_template = 'staff/base_staff.html'
     
     context = {
+        'base_template': base_template,
         'doctors': DoctorProfile.objects.all(),
         'patients': Patient.objects.all()
     }
-    return render(request, 'staff/add_treatment.html', context)
+    return render(request, 'shared/add_treatment.html', context)
 
 @login_required
 @user_passes_test(is_doctor)
