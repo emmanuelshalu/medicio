@@ -230,9 +230,9 @@
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link {% if request.resolver_match.url_name == 'manage_doctors' %}active{% endif %}" 
-                               href="{% url 'manage_doctors' %}">
-                                <i class="bi bi-person-badge"></i> Doctor Availability
+                            <a class="nav-link {% if request.resolver_match.url_name == 'all_doctors' %}active{% endif %}" 
+                               href="{% url 'all_doctors' %}">
+                                <i class="bi bi-person-badge"></i> Doctors
                             </a>
                         </li>
                         <li class="nav-item">

@@ -29,7 +29,7 @@
             <div class="card text-white bg-warning">
                 <div class="card-body">
                     <h5 class="card-title">Pending Bills</h5>
-                    <p class="card-text display-4">{{ pending_bills_count }}</p>
+                    <p class="card-text display-4">{{ pending_bills }}</p>
                     <a href="{% url 'manage_bills' %}" class="text-white">View Bills →</a>
                 </div>
             </div>
@@ -37,9 +37,9 @@
         <div class="col-md-3">
             <div class="card text-white bg-info">
                 <div class="card-body">
-                    <h5 class="card-title">Available Doctors</h5>
-                    <p class="card-text display-4">{{ available_doctors_count }}</p>
-                    <a href="{% url 'manage_doctors' %}" class="text-white">Check Availability →</a>
+                    <h5 class="card-title">Total Doctors</h5>
+                    <p class="card-text display-4">{{ total_doctors }}</p>
+                    <a href="{% url 'all_doctors' %}" class="text-white">View All Doctors →</a>
                 </div>
             </div>
         </div>

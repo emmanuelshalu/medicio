@@ -1,0 +1,47 @@
+{% extends 'staff/base_staff.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="bi bi-person-badge"></i> All Doctors</h2>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Specialization</th>
+                            <th>Status</th>
+                            <th>Contact</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for doctor in doctors %}
+                        <tr>
+                            <td>{{ doctor.id }}</td>
+                            <td>Dr. {{ doctor.user.get_full_name }}</td>
+                            <td>{{ doctor.specialty.specialty_name }}</td>
+                            <td>
+                                <span class="badge {% if doctor.is_available %}bg-success{% else %}bg-danger{% endif %}">
+                                    {{ doctor.is_available|yesno:"Available,Not Available" }}
+                                </span>
+                            </td>
+                            <td>{{ doctor.phone_number }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center">No doctors found</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

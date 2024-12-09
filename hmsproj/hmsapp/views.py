@@ -28,6 +28,7 @@ from collections import defaultdict
 
 
 
+
 def get_doctor_availability(doctor, day_of_week):
     """
     Get doctor's availability for a given day. Returns default availability if none is set.
@@ -870,13 +871,16 @@ def delete_staff(request, staff_id):
 @login_required
 @staff_required
 def staff_dashboard(request):
-    staff = get_object_or_404(StaffProfile, user=request.user)
     context = {
-        'staff': staff,
+        'staff': get_object_or_404(StaffProfile, user=request.user),
         'todays_appointments': Appointment.objects.filter(
             appointment_date=date.today()
         ).order_by('appointment_time'),
-        'recent_patients': Patient.objects.order_by('-created_at')[:5]
+        'recent_patients': Patient.objects.order_by('-created_at')[:5],
+        'pending_bills': Bill.objects.filter(
+            payment_status__in=['UNPAID', 'PARTIALLY_PAID']
+        ).count(),
+        'total_doctors': DoctorProfile.objects.count()
     }
     return render(request, 'staff/staff_dashboard.html', context)
 
@@ -1244,7 +1248,6 @@ def analytics_dashboard(request):
         ),
         'age_distribution': get_age_distribution(),
     }
-    
     # Get top performing doctors
     top_doctors = (
         Appointment.objects.filter(appointment_date__range=[start_date, end_date])
@@ -1426,3 +1429,12 @@ def generate_service_report(start_date, end_date, filters):
             .order_by('month')
         )
     }
+
+@login_required
+def all_doctors(request):
+    doctors = DoctorProfile.objects.all().select_related('user')
+    context = {
+        'doctors': doctors,
+        'title': 'All Doctors'
+    }
+    return render(request, 'staff/all_doctors.html', context)

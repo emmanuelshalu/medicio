@@ -65,6 +65,7 @@ urlpatterns = [
     path('staff/treatments/<int:treatment_id>/edit/', views.edit_treatment, name='edit_treatment'),
     path('staff/treatments/<int:treatment_id>/delete/', views.delete_treatment, name='delete_treatment'),
     path('staff/treatments/<int:treatment_id>/view/', views.view_treatment, name='view_treatment'),
+    path('staff/doctors/', views.all_doctors, name='all_doctors'),
 
     # Treatment URLs
     path('treatment/<int:treatment_id>/view/', views.view_treatment, name='view_treatment'),
