@@ -67,6 +67,9 @@ urlpatterns = [
     path('treatment/<int:treatment_id>/edit/', views.edit_treatment, name='edit_treatment'),
     path('treatment/<int:treatment_id>/delete/', views.delete_treatment, name='delete_treatment'),
     path('treatment/add/', views.add_treatment, name='add_treatment'),
+
+    # API URLs
+    path('api/find-next-slot/', views.find_next_slot, name='find_next_slot'),
 ] 
 
 # Serve media files in development

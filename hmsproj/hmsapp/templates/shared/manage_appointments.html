@@ -147,9 +147,14 @@
                             <input type="date" class="form-control" id="appointmentDate" name="appointment_date" 
                                    min="{{ today|date:'Y-m-d' }}" required>
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-md-5">
                             <label for="appointmentTime" class="form-label">Time *</label>
                             <input type="time" class="form-control" id="appointmentTime" name="appointment_time" required>
+                        </div>
+                        <div class="col-md-1 d-flex align-items-end">
+                            <button type="button" class="btn btn-secondary" id="findNextSlot" title="Find next available slot">
+                                <i class="bi bi-clock"></i>
+                            </button>
                         </div>
                     </div>
 
@@ -222,11 +227,45 @@
         const doctorSelect = document.getElementById('doctor');
         const dateInput = document.getElementById('appointmentDate');
         const timeInput = document.getElementById('appointmentTime');
+        const findNextSlotBtn = document.getElementById('findNextSlot');
         
         // Set minimum date to today
         const today = new Date();
         dateInput.min = today.toISOString().split('T')[0];
         
+        findNextSlotBtn.addEventListener('click', function() {
+            const doctorId = doctorSelect.value;
+            if (!doctorId) {
+                alert('Please select a doctor first');
+                return;
+            }
+
+            // Show loading state
+            findNextSlotBtn.disabled = true;
+            findNextSlotBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>';
+
+            // Make AJAX call to find next available slot
+            fetch(`/api/find-next-slot/?doctor=${doctorId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        dateInput.value = data.date;
+                        timeInput.value = data.time;
+                    } else {
+                        alert(data.message || 'No available slots found');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error finding next available slot');
+                })
+                .finally(() => {
+                    // Reset button state
+                    findNextSlotBtn.disabled = false;
+                    findNextSlotBtn.innerHTML = '<i class="bi bi-clock"></i>';
+                });
+        });
+
         appointmentForm.addEventListener('submit', function(e) {
             const selectedDate = new Date(dateInput.value + 'T' + timeInput.value);
             const now = new Date();

@@ -1086,3 +1086,92 @@ def google_calendar_disconnect(request):
     
     messages.success(request, 'Google Calendar disconnected successfully.')
     return redirect('doctor_profile')
+
+@login_required
+def find_next_slot(request):
+    """API endpoint to find the next available slot for a doctor"""
+    doctor_id = request.GET.get('doctor')
+    if not doctor_id:
+        return JsonResponse({'success': False, 'message': 'Doctor ID is required'})
+
+    try:
+        doctor = DoctorProfile.objects.get(id=doctor_id)
+        current_datetime = timezone.now()
+        
+        # Get doctor's availability for the current weekday
+        current_weekday = current_datetime.weekday()
+        availability = DoctorAvailability.objects.filter(
+            doctor=doctor,
+            day_of_week=current_weekday,
+            is_available=True
+        ).first()
+
+        # If no availability found for current day, look for next available day
+        days_checked = 0
+        while not availability and days_checked < 7:
+            current_datetime += timedelta(days=1)
+            current_weekday = current_datetime.weekday()
+            availability = DoctorAvailability.objects.filter(
+                doctor=doctor,
+                day_of_week=current_weekday,
+                is_available=True
+            ).first()
+            days_checked += 1
+
+        if not availability:
+            return JsonResponse({
+                'success': False, 
+                'message': 'No available slots found in the next 7 days'
+            })
+
+        # Get all appointments for the doctor on the found day
+        day_appointments = Appointment.objects.filter(
+            doctor=doctor,
+            appointment_date=current_datetime.date(),
+            status='SCHEDULED'
+        ).order_by('appointment_time')
+
+        # Default slot duration in minutes
+        slot_duration = 30
+
+        # Start from doctor's availability start time
+        current_time = availability.start_time
+        if current_datetime.date() == timezone.now().date():
+            # If it's today, start from current time (rounded up to next slot)
+            current_time = max(
+                current_time,
+                (timezone.now() + timedelta(minutes=(slot_duration - timezone.now().minute % slot_duration))).time()
+            )
+
+        # Find the first available slot
+        while current_time < availability.end_time:
+            slot_datetime = datetime.combine(current_datetime.date(), current_time)
+            
+            # Check if this slot conflicts with any existing appointment
+            slot_is_available = not day_appointments.filter(
+                appointment_time__gte=current_time,
+                appointment_time__lt=(datetime.combine(date.min, current_time) + timedelta(minutes=slot_duration)).time()
+            ).exists()
+
+            if slot_is_available:
+                return JsonResponse({
+                    'success': True,
+                    'date': current_datetime.date().isoformat(),
+                    'time': current_time.strftime('%H:%M'),
+                    'message': 'Available slot found'
+                })
+
+            # Move to next slot
+            slot_datetime += timedelta(minutes=slot_duration)
+            current_time = slot_datetime.time()
+
+        # If we get here, no slots were available on this day
+        return JsonResponse({
+            'success': False,
+            'message': 'No available slots found for the selected day'
+        })
+
+    except DoctorProfile.DoesNotExist:
+        return JsonResponse({'success': False, 'message': 'Doctor not found'})
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': str(e)})
