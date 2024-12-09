@@ -7,6 +7,8 @@ from django.db.models.signals import post_migrate
 from django.apps import apps
 from datetime import date, datetime, timedelta
 from hmsapp.utils.google_calendar import get_google_calendar_service, create_calendar_event, delete_calendar_event
+from django.db.models import Count, Avg, Sum, F
+from django.db.models.functions import TruncMonth, TruncYear, ExtractMonth
 
 # Phone number validator
 phone_regex = RegexValidator(
@@ -388,3 +390,34 @@ class LoginActivity(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - {self.login_datetime}"
+
+class ReportConfiguration(models.Model):
+    """Model to store customizable report configurations"""
+    
+    REPORT_TYPES = [
+        ('PATIENT_DEMOGRAPHICS', 'Patient Demographics'),
+        ('REVENUE_ANALYSIS', 'Revenue Analysis'),
+        ('APPOINTMENT_TRENDS', 'Appointment Trends'),
+        ('SERVICE_UTILIZATION', 'Service Utilization'),
+        ('DOCTOR_PERFORMANCE', 'Doctor Performance'),
+    ]
+    
+    FREQUENCY_CHOICES = [
+        ('DAILY', 'Daily'),
+        ('WEEKLY', 'Weekly'),
+        ('MONTHLY', 'Monthly'),
+        ('QUARTERLY', 'Quarterly'),
+        ('YEARLY', 'Yearly'),
+    ]
+    
+    name = models.CharField(max_length=100)
+    report_type = models.CharField(max_length=50, choices=REPORT_TYPES)
+    frequency = models.CharField(max_length=20, choices=FREQUENCY_CHOICES)
+    filters = models.JSONField(default=dict, blank=True)
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    is_active = models.BooleanField(default=True)
+
+    def __str__(self):
+        return f"{self.name} ({self.get_report_type_display()})"

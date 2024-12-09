@@ -74,6 +74,8 @@ urlpatterns = [
 
     # API URLs
     path('api/find-next-slot/', views.find_next_slot, name='find_next_slot'),
+    path('analytics/', views.analytics_dashboard, name='analytics_dashboard'),
+    path('reports/generate/', views.generate_report, name='generate_report'),
 ] 
 
 # Serve media files in development

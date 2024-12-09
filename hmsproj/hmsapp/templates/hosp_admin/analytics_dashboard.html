@@ -1,0 +1,193 @@
+{% extends 'hosp_admin/base_admin.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid">
+    <h2>Analytics Dashboard</h2>
+    
+    <!-- Date Range Filter -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="form-inline">
+                <div class="form-group mx-2">
+                    <label for="start_date">Start Date:</label>
+                    <input type="date" class="form-control" id="start_date" name="start_date" value="{{ start_date|date:'Y-m-d' }}">
+                </div>
+                <div class="form-group mx-2">
+                    <label for="end_date">End Date:</label>
+                    <input type="date" class="form-control" id="end_date" name="end_date" value="{{ end_date|date:'Y-m-d' }}">
+                </div>
+                <button type="submit" class="btn btn-primary">Update</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Key Metrics -->
+    <div class="row">
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5>Total Patients</h5>
+                    <h3>{{ metrics.total_patients }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5>Total Appointments</h5>
+                    <h3>{{ metrics.total_appointments }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5>Total Revenue</h5>
+                    <h3>${{ metrics.total_revenue|floatformat:2 }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5>Avg Daily Appointments</h5>
+                    <h3>{{ metrics.avg_daily_appointments|floatformat:1 }}</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts -->
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5>Appointment Trends</h5>
+                    <canvas id="appointmentTrendsChart"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5>Revenue Trends</h5>
+                    <canvas id="revenueTrendsChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Demographics -->
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5>Gender Distribution</h5>
+                    <canvas id="genderChart"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5>Age Distribution</h5>
+                    <canvas id="ageChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Top Doctors -->
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-body">
+                    <h5>Top Performing Doctors</h5>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Doctor Name</th>
+                                <th>Appointments</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for doctor in top_doctors %}
+                            <tr>
+                                <td>{{ doctor.doctor__user__first_name }} {{ doctor.doctor__user__last_name }}</td>
+                                <td>{{ doctor.appointment_count }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Parse the JSON data passed from the view
+    const appointmentTrends = JSON.parse('{{ appointment_trends|safe }}');
+    const revenueTrends = JSON.parse('{{ revenue_trends|safe }}');
+    const demographics = JSON.parse('{{ demographics|safe }}');
+
+    // Create charts using Chart.js
+    // Appointment Trends Chart
+    new Chart(document.getElementById('appointmentTrendsChart'), {
+        type: 'line',
+        data: {
+            labels: appointmentTrends.map(item => new Date(item.month).toLocaleDateString()),
+            datasets: [{
+                label: 'Appointments',
+                data: appointmentTrends.map(item => item.count),
+                borderColor: 'rgb(75, 192, 192)',
+                tension: 0.1
+            }]
+        }
+    });
+
+    // Revenue Trends Chart
+    new Chart(document.getElementById('revenueTrendsChart'), {
+        type: 'line',
+        data: {
+            labels: revenueTrends.map(item => new Date(item.month).toLocaleDateString()),
+            datasets: [{
+                label: 'Revenue ($)',
+                data: revenueTrends.map(item => item.total),
+                borderColor: 'rgb(153, 102, 255)',
+                tension: 0.1
+            }]
+        }
+    });
+
+    // Gender Distribution Chart
+    new Chart(document.getElementById('genderChart'), {
+        type: 'pie',
+        data: {
+            labels: Object.keys(demographics.gender_distribution),
+            datasets: [{
+                data: Object.values(demographics.gender_distribution),
+                backgroundColor: ['rgb(255, 99, 132)', 'rgb(54, 162, 235)', 'rgb(255, 205, 86)']
+            }]
+        }
+    });
+
+    // Age Distribution Chart
+    new Chart(document.getElementById('ageChart'), {
+        type: 'bar',
+        data: {
+            labels: Object.keys(demographics.age_distribution),
+            datasets: [{
+                label: 'Patients',
+                data: Object.values(demographics.age_distribution),
+                backgroundColor: 'rgb(75, 192, 192)'
+            }]
+        }
+    });
+</script>
+{% endblock %} 

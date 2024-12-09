@@ -20,6 +20,11 @@ from django.utils.timezone import datetime
 from django.contrib.auth import signals
 from django.db.models import Q
 from django.core.paginator import Paginator
+from django.db.models import Count, Avg, Sum, F
+from django.db.models.functions import TruncMonth, TruncYear, ExtractMonth
+from django.core.serializers.json import DjangoJSONEncoder
+import json
+from collections import defaultdict
 
 
 
@@ -1181,3 +1186,241 @@ def create_appointment(request):
 def update_patient(request):
     # Your view code here
     pass
+
+@login_required
+@admin_required
+def analytics_dashboard(request):
+    """Main analytics dashboard view"""
+    
+    # Get date range from request or default to last 12 months
+    end_date = timezone.now().date()
+    start_date = request.GET.get('start_date', (end_date - timedelta(days=365)).isoformat())
+    end_date = request.GET.get('end_date', end_date.isoformat())
+    
+    # Convert to datetime objects
+    start_date = datetime.fromisoformat(start_date)
+    end_date = datetime.fromisoformat(end_date)
+    
+    # Get key metrics
+    metrics = {
+        'total_patients': Patient.objects.count(),
+        'total_appointments': Appointment.objects.filter(
+            appointment_date__range=[start_date, end_date]
+        ).count(),
+        'total_revenue': Bill.objects.filter(
+            created_at__range=[start_date, end_date]
+        ).aggregate(total=Sum('paid_amount'))['total'] or 0,
+        'avg_daily_appointments': Appointment.objects.filter(
+            appointment_date__range=[start_date, end_date]
+        ).count() / max((end_date - start_date).days, 1)
+    }
+    
+    # Get appointment trends
+    appointment_trends = (
+        Appointment.objects.filter(appointment_date__range=[start_date, end_date])
+        .annotate(month=TruncMonth('appointment_date'))
+        .values('month')
+        .annotate(count=Count('id'))
+        .order_by('month')
+    )
+    
+    # Get revenue trends
+    revenue_trends = (
+        Bill.objects.filter(created_at__range=[start_date, end_date])
+        .annotate(month=TruncMonth('created_at'))
+        .values('month')
+        .annotate(total=Sum('paid_amount'))
+        .order_by('month')
+    )
+    
+    # Get patient demographics
+    demographics = {
+        'gender_distribution': dict(
+            Patient.objects.values('gender')
+            .annotate(count=Count('id'))
+            .values_list('gender', 'count')
+        ),
+        'age_distribution': get_age_distribution(),
+    }
+    
+    # Get top performing doctors
+    top_doctors = (
+        Appointment.objects.filter(appointment_date__range=[start_date, end_date])
+        .values('doctor__user__first_name', 'doctor__user__last_name')
+        .annotate(appointment_count=Count('id'))
+        .order_by('-appointment_count')[:5]
+    )
+    
+    context = {
+        'metrics': metrics,
+        'appointment_trends': json.dumps(list(appointment_trends), cls=DjangoJSONEncoder),
+        'revenue_trends': json.dumps(list(revenue_trends), cls=DjangoJSONEncoder),
+        'demographics': demographics,
+        'top_doctors': top_doctors,
+        'start_date': start_date.date(),
+        'end_date': end_date.date(),
+    }
+    
+    return render(request, 'hosp_admin/analytics_dashboard.html', context)
+
+@login_required
+@admin_required
+def generate_report(request):
+    """Generate customized reports based on configuration"""
+    
+    if request.method == 'POST':
+        report_type = request.POST.get('report_type')
+        start_date = request.POST.get('start_date')
+        end_date = request.POST.get('end_date')
+        filters = json.loads(request.POST.get('filters', '{}'))
+        
+        # Generate report based on type
+        if report_type == 'PATIENT_DEMOGRAPHICS':
+            data = generate_demographics_report(start_date, end_date, filters)
+        elif report_type == 'REVENUE_ANALYSIS':
+            data = generate_revenue_report(start_date, end_date, filters)
+        elif report_type == 'APPOINTMENT_TRENDS':
+            data = generate_appointment_report(start_date, end_date, filters)
+        elif report_type == 'SERVICE_UTILIZATION':
+            data = generate_service_report(start_date, end_date, filters)
+        else:
+            data = {}
+        
+        # Save report configuration if requested
+        if request.POST.get('save_config'):
+            ReportConfiguration.objects.create(
+                name=request.POST.get('report_name'),
+                report_type=report_type,
+                frequency=request.POST.get('frequency'),
+                filters=filters,
+                created_by=request.user
+            )
+        
+        return render(request, 'hosp_admin/report_result.html', {'data': data})
+    
+    # For GET requests, show the report configuration form
+    context = {
+        'report_types': ReportConfiguration.REPORT_TYPES,
+        'frequencies': ReportConfiguration.FREQUENCY_CHOICES,
+        'saved_configs': ReportConfiguration.objects.filter(created_by=request.user)
+    }
+    return render(request, 'hosp_admin/generate_report.html', context)
+
+def get_age_distribution():
+    """Helper function to calculate patient age distribution"""
+    age_ranges = [(0, 18), (19, 30), (31, 45), (46, 60), (61, float('inf'))]
+    distribution = defaultdict(int)
+    
+    for patient in Patient.objects.all():
+        age = (timezone.now().date() - patient.date_of_birth).days // 365
+        for start, end in age_ranges:
+            if start <= age <= end:
+                range_label = f"{start}-{end if end != float('inf') else '+'}"
+                distribution[range_label] += 1
+                break
+    
+    return dict(distribution)
+
+def generate_demographics_report(start_date, end_date, filters):
+    """Generate detailed patient demographics report"""
+    patients = Patient.objects.filter(created_at__range=[start_date, end_date])
+    
+    # Apply filters
+    if filters.get('gender'):
+        patients = patients.filter(gender=filters['gender'])
+    if filters.get('age_min'):
+        patients = patients.filter(date_of_birth__lte=timezone.now().date() - timedelta(days=int(filters['age_min'])*365))
+    if filters.get('age_max'):
+        patients = patients.filter(date_of_birth__gte=timezone.now().date() - timedelta(days=int(filters['age_max'])*365))
+    
+    return {
+        'total_patients': patients.count(),
+        'gender_distribution': dict(patients.values('gender').annotate(count=Count('id')).values_list('gender', 'count')),
+        'age_distribution': get_age_distribution(),
+        'nationality_distribution': dict(patients.values('nationality').annotate(count=Count('id')).values_list('nationality', 'count')),
+        'monthly_registrations': list(
+            patients.annotate(month=TruncMonth('created_at'))
+            .values('month')
+            .annotate(count=Count('id'))
+            .order_by('month')
+        )
+    }
+
+def generate_revenue_report(start_date, end_date, filters):
+    """Generate detailed revenue analysis report"""
+    bills = Bill.objects.filter(created_at__range=[start_date, end_date])
+    
+    # Apply filters
+    if filters.get('payment_status'):
+        bills = bills.filter(payment_status=filters['payment_status'])
+    
+    return {
+        'total_revenue': bills.aggregate(total=Sum('paid_amount'))['total'] or 0,
+        'average_bill_amount': bills.aggregate(avg=Avg('amount'))['avg'] or 0,
+        'payment_status_distribution': dict(
+            bills.values('payment_status')
+            .annotate(count=Count('id'), total=Sum('amount'))
+            .values_list('payment_status', 'total')
+        ),
+        'monthly_revenue': list(
+            bills.annotate(month=TruncMonth('created_at'))
+            .values('month')
+            .annotate(total=Sum('paid_amount'))
+            .order_by('month')
+        ),
+        'outstanding_amount': bills.filter(
+            payment_status__in=['PENDING', 'PARTIALLY_PAID']
+        ).aggregate(total=Sum(F('amount') - F('paid_amount')))['total'] or 0
+    }
+
+def generate_appointment_report(start_date, end_date, filters):
+    """Generate detailed appointment trends report"""
+    appointments = Appointment.objects.filter(appointment_date__range=[start_date, end_date])
+    
+    # Apply filters
+    if filters.get('doctor'):
+        appointments = appointments.filter(doctor_id=filters['doctor'])
+    if filters.get('status'):
+        appointments = appointments.filter(status=filters['status'])
+    
+    return {
+        'total_appointments': appointments.count(),
+        'status_distribution': dict(
+            appointments.values('status')
+            .annotate(count=Count('id'))
+            .values_list('status', 'count')
+        ),
+        'doctor_distribution': dict(
+            appointments.values('doctor__user__first_name', 'doctor__user__last_name')
+            .annotate(count=Count('id'))
+            .values_list('doctor__user__first_name', 'count')
+        ),
+        'monthly_trends': list(
+            appointments.annotate(month=TruncMonth('appointment_date'))
+            .values('month')
+            .annotate(count=Count('id'))
+            .order_by('month')
+        )
+    }
+
+def generate_service_report(start_date, end_date, filters):
+    """Generate service utilization report"""
+    treatments = Treatment.objects.filter(created_at__range=[start_date, end_date])
+    
+    if filters.get('doctor'):
+        treatments = treatments.filter(doctor_id=filters['doctor'])
+        
+    return {
+        'total_treatments': treatments.count(),
+        'treatments_by_doctor': dict(
+            treatments.values('doctor__user__first_name')
+            .annotate(count=Count('id'))
+            .values_list('doctor__user__first_name', 'count')
+        ),
+        'monthly_treatments': list(
+            treatments.annotate(month=TruncMonth('created_at'))
+            .values('month')
+            .annotate(count=Count('id'))
+            .order_by('month')
+        )
+    }
