@@ -35,9 +35,9 @@ os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
 SECRET_KEY = 'django-insecure-n&m9bu6xq$v)09wo4@s&+_rzc$2m@ok2rl3394f*v6!6)r4*4%'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = 'RENDER' not in os.environ
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+ALLOWED_HOSTS = []
 
 # Add Render external hostname
 RENDER_EXTERNAL_HOSTNAME = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
@@ -96,21 +96,11 @@ WSGI_APPLICATION = 'hmsproj.wsgi.application'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.environ.get('PGDATABASE', 'hms'),
-        'USER': os.environ.get('PGUSER', 'postgres'),
-        'PASSWORD': os.environ.get('PGPASSWORD', ''),
-        'HOST': os.environ.get('PGHOST', 'localhost'),
-        'PORT': os.environ.get('PGPORT', '5432'),
-    }
-}
-
-if 'DATABASE_URL' in os.environ:
-    DATABASES['default'] = dj_database_url.config(
-        conn_max_age=600,
-        conn_health_checks=True,
+    'default': dj_database_url.config(
+        default='postgresql://dbsqlite3hms_user:fT3eSbYfdfWnjGpYfhIsS2Sc718qXKxq@dpg-ctc8j03tq21c73dlv280-a/dbsqlite3hms',
+        conn_max_age=600
     )
+}
 
 
 # Password validation
