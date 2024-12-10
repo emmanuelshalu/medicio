@@ -149,3 +149,6 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 LOGIN_URL = '/login/'
+
+# Add your hospital's UPI ID
+HOSPITAL_UPI_ID = 'emmanuel.shalu-1@oksbi'  # Replace with your actual UPI ID

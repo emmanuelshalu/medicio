@@ -11,6 +11,9 @@
         <a href="{% url 'manage_bills' %}" class="btn btn-secondary">
             <i class="bi bi-arrow-left"></i> Back to Bills
         </a>
+        <a href="{% url 'upi_payment' bill.id %}" class="btn btn-primary">
+            Pay via UPI
+        </a>
     </div>
 </div>
 

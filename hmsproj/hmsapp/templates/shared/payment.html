@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-6 offset-md-3">
+            <div class="card">
+                <div class="card-header">
+                    <h4>Payment Details</h4>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-4">
+                        <form id="paymentForm" method="post">
+                            {% csrf_token %}
+                            <div class="form-group">
+                                <h5>Payment Amount: 
+                                    <input type="number" 
+                                           id="paymentAmount" 
+                                           name="payment_amount" 
+                                           value="{{ bill.remaining_amount }}" 
+                                           class="form-control d-inline-block" 
+                                           style="width: 150px;"
+                                           min="1" 
+                                           max="{{ bill.remaining_amount }}"
+                                           step="0.01"
+                                           required>
+                                </h5>
+                                <small class="text-muted">Remaining Balance: ₹{{ bill.remaining_amount }}</small>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Update Amount</button>
+                        </form>
+                        <p>Bill ID: {{ bill.id }}</p>
+                        <p>Patient: {{ bill.patient.patient_name }}</p>
+                    </div>
+
+                    <div class="text-center">
+                        <img src="data:image/png;base64,{{ qr_code }}" 
+                             alt="UPI QR Code" 
+                             class="img-fluid mb-3"
+                             style="max-width: 300px;">
+                        
+                        <p class="mb-3">Scan QR code to pay via UPI</p>
+                        
+                        <div class="upi-details">
+                            <p><strong>UPI ID:</strong> <span id="upiId">{{ upi_id }}</span>
+                               <button class="btn btn-sm btn-outline-primary ml-2" onclick="copyUpiId()">Copy</button>
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-info mt-3">
+                        <small>
+                            1. Open your UPI app (Google Pay, PhonePe, etc.)<br>
+                            2. Scan the QR code or paste the UPI ID<br>
+                            3. Enter amount: ₹<span id="displayAmount">{{ payment_amount }}</span><br>
+                            4. Complete the payment<br>
+                            5. Keep the transaction ID for reference
+                        </small>
+                    </div>
+
+                    <!-- Payment Verification Form -->
+                    <form method="post" action="{% url 'verify_upi_payment' bill.id %}" class="mt-4">
+                        {% csrf_token %}
+                        <input type="hidden" name="payment_amount" value="{{ payment_amount }}">
+                        <div class="form-group">
+                            <label for="utr">UPI Transaction ID (UTR)</label>
+                            <input type="text" class="form-control" id="utr" name="utr" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-block">Verify Payment</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function copyUpiId() {
+    var upiId = document.getElementById('upiId').innerText;
+    navigator.clipboard.writeText(upiId).then(function() {
+        alert('UPI ID copied to clipboard!');
+    });
+}
+
+// Update display amount when input changes
+document.getElementById('paymentAmount').addEventListener('change', function() {
+    document.getElementById('displayAmount').textContent = this.value;
+});
+</script>
+{% endblock %} 

@@ -439,6 +439,7 @@ class Payment(models.Model):
         ('DEBIT_CARD', 'Debit Card'),
         ('INSURANCE', 'Insurance'),
         ('BANK_TRANSFER', 'Bank Transfer'),
+        ('UPI', 'UPI Payment'),
     ]
     
     bill = models.ForeignKey(Bill, on_delete=models.CASCADE, related_name='payment_set')

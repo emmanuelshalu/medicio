@@ -78,6 +78,8 @@ urlpatterns = [
     path('analytics/', views.analytics_dashboard, name='analytics_dashboard'),
     path('reports/generate/', views.generate_report, name='generate_report'),
     path('bills/<int:bill_id>/', views.view_bill, name='view_bill'),
+    path('bills/<int:bill_id>/upi-payment/', views.upi_payment, name='upi_payment'),
+    path('bills/<int:bill_id>/verify-upi-payment/', views.verify_upi_payment, name='verify_upi_payment'),
 ] 
 
 # Serve media files in development

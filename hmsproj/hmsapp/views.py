@@ -25,6 +25,9 @@ from django.db.models.functions import TruncMonth, TruncYear, ExtractMonth
 from django.core.serializers.json import DjangoJSONEncoder
 import json
 from collections import defaultdict
+import qrcode
+import base64
+from io import BytesIO
 
 
 
@@ -1438,3 +1441,73 @@ def all_doctors(request):
         'title': 'All Doctors'
     }
     return render(request, 'staff/all_doctors.html', context)
+
+def generate_upi_qr(amount, upi_id, name, transaction_note):
+    """Generate UPI QR code"""
+    upi_url = f"upi://pay?pa={upi_id}&pn={name}&am={amount}&tn={transaction_note}"
+    qr = qrcode.QRCode(version=1, box_size=10, border=5)
+    qr.add_data(upi_url)
+    qr.make(fit=True)
+    img = qr.make_image(fill_color="black", back_color="white")
+    
+    # Convert image to base64
+    buffer = BytesIO()
+    img.save(buffer, format="PNG")
+    qr_code = base64.b64encode(buffer.getvalue()).decode()
+    return qr_code
+
+@login_required
+def upi_payment(request, bill_id):
+    """Handle UPI payment for a bill"""
+    bill = get_object_or_404(Bill, id=bill_id)
+    
+    # Get payment amount from POST or default to remaining amount
+    payment_amount = request.POST.get('payment_amount', bill.remaining_amount)
+    
+    # Your hospital's UPI ID
+    upi_id = settings.HOSPITAL_UPI_ID
+    transaction_note = f"Bill#{bill.id} for {bill.patient.patient_name}"
+    
+    # Generate QR code with the specified amount
+    qr_code = generate_upi_qr(
+        amount=payment_amount,
+        upi_id=upi_id,
+        name="Hospital Name",
+        transaction_note=transaction_note
+    )
+    
+    context = {
+        'bill': bill,
+        'qr_code': qr_code,
+        'upi_id': upi_id,
+        'payment_amount': payment_amount
+    }
+    return render(request, 'shared/payment.html', context)
+
+@login_required
+def verify_upi_payment(request, bill_id):
+    """Verify UPI payment and update bill status"""
+    if request.method == 'POST':
+        bill = get_object_or_404(Bill, id=bill_id)
+        utr = request.POST.get('utr')
+        payment_amount = Decimal(request.POST.get('payment_amount', 0))
+        
+        # Validate payment amount
+        if payment_amount <= 0 or payment_amount > bill.remaining_amount:
+            messages.error(request, 'Invalid payment amount')
+            return redirect('upi_payment', bill_id=bill.id)
+        
+        # Create payment record with UTR
+        Payment.objects.create(
+            bill=bill,
+            amount=payment_amount,
+            payment_date=timezone.now().date(),
+            payment_method='UPI',
+            transaction_id=utr,  # Store the UTR
+            notes=f"UPI Payment with UTR: {utr}"
+        )
+        
+        messages.success(request, 'Payment recorded successfully!')
+        return redirect('view_bill', bill_id=bill.id)
+    
+    return redirect('upi_payment', bill_id=bill_id)
