@@ -21,5 +21,5 @@ echo "Collecting static files..."
 python manage.py collectstatic --no-input
 
 # If you have initial data to load, uncomment the following line
-# echo "Loading initial data..."
-# python manage.py loaddata initial_data.json
+echo "Loading initial data..."
+python manage.py loaddata initial_data.json
