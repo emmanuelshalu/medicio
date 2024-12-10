@@ -8,14 +8,17 @@ pip install -r requirements.txt
 # Create the staticfiles directory if it doesn't exist
 mkdir -p staticfiles
 
-echo "Making migrations..."
+echo "Resetting migrations..."
+python manage.py migrate hmsapp zero
+
+echo "Making fresh migrations..."
 python manage.py makemigrations hmsapp --noinput
 
-echo "Running migrations..."
+echo "Running all migrations..."
 python manage.py migrate --noinput
 
-echo "Checking migration status..."
-python manage.py showmigrations
+echo "Creating default groups..."
+python manage.py setup_roles
 
 echo "Creating cache table..."
 python manage.py createcachetable
