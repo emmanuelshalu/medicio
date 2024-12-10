@@ -4,7 +4,11 @@ set -o errexit
 
 pip install -r requirements.txt
 
+echo "Running migrations..."
+python manage.py migrate --noinput
+
+echo "Creating cache table..."
+python manage.py createcachetable
+
+echo "Collecting static files..."
 python manage.py collectstatic --no-input
-python manage.py makemigrations hmsapp
-python manage.py migrate hmsapp
-python manage.py migrate
