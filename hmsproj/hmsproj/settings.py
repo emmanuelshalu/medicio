@@ -22,22 +22,19 @@ LOGGING = {
     'handlers': {
         'console': {
             'class': 'logging.StreamHandler',
+            'level': 'DEBUG',
         },
-    },
-    'root': {
-        'handlers': ['console'],
-        'level': 'INFO',
     },
     'loggers': {
-        'django': {
+        'django.db.backends': {
             'handlers': ['console'],
-            'level': 'INFO',
+            'level': 'DEBUG',
             'propagate': False,
         },
-        'django.db.backends': {
-            'level': 'INFO',
+        'django': {
             'handlers': ['console'],
-            'propagate': False,
+            'level': 'DEBUG',
+            'propagate': True,
         },
     },
 }
@@ -116,6 +113,7 @@ TEMPLATES = [
                 'django.contrib.messages.context_processors.messages',
                 'hmsapp.context_processors.base_template',
             ],
+            'string_if_invalid': '{{ %s }}'
         },
     },
 ]

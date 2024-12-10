@@ -30,13 +30,21 @@ except Exception as e:
     sys.exit(1)
 END
 
-echo "Making migrations..."
-python manage.py makemigrations --noinput
+# Force recreate DB tables
+echo "Removing migrations..."
+rm -f hmsapp/migrations/0*.py
+rm -f hmsapp/migrations/__pycache__/*
 
-echo "Running migrations..."
+echo "Making fresh migrations..."
+python manage.py makemigrations hmsapp
+
+echo "Show migrations status before migrate..."
+python manage.py showmigrations
+
+echo "Applying migrations..."
 python manage.py migrate --noinput
 
-echo "Checking migration status..."
+echo "Show migrations status after migrate..."
 python manage.py showmigrations
 
 echo "Creating default groups..."
@@ -52,11 +60,20 @@ python manage.py collectstatic --no-input --clear
 echo "Creating superuser..."
 python manage.py shell << END
 from django.contrib.auth.models import User
-if not User.objects.filter(username='admin').exists():
-    User.objects.create_superuser('admin', 'admin@example.com', 'admin123')
-    print("Superuser created successfully!")
-else:
-    print("Superuser already exists.")
+try:
+    if not User.objects.filter(username='admin').exists():
+        User.objects.create_superuser('admin', 'admin@example.com', 'admin123')
+        print("Superuser created successfully!")
+    else:
+        print("Superuser already exists.")
+except Exception as e:
+    print(f"Error creating superuser: {e}")
 END
+
+echo "Initialize database..."
+python manage.py initialize_db
+
+echo "Final migration check..."
+python manage.py showmigrations
 
 echo "Build completed!"
