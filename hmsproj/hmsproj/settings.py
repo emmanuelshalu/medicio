@@ -13,34 +13,6 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 from pathlib import Path
 import os
 import dj_database_url
-import logging.config
-
-# Configure logging
-LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'handlers': {
-        'console': {
-            'class': 'logging.StreamHandler',
-            'level': 'DEBUG',
-        },
-    },
-    'loggers': {
-        'django.db.backends': {
-            'handlers': ['console'],
-            'level': 'DEBUG',
-            'propagate': False,
-        },
-        'django': {
-            'handlers': ['console'],
-            'level': 'DEBUG',
-            'propagate': True,
-        },
-    },
-}
-
-# Set this to True temporarily to see detailed error pages
-DEBUG = True
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -65,7 +37,7 @@ SECRET_KEY = 'django-insecure-n&m9bu6xq$v)09wo4@s&+_rzc$2m@ok2rl3394f*v6!6)r4*4%
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = 'RENDER' not in os.environ
 
-ALLOWED_HOSTS = ['mediciohms.onrender.com', 'localhost', '127.0.0.1', '*']
+ALLOWED_HOSTS = []
 
 # Add Render external hostname
 RENDER_EXTERNAL_HOSTNAME = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
@@ -113,7 +85,6 @@ TEMPLATES = [
                 'django.contrib.messages.context_processors.messages',
                 'hmsapp.context_processors.base_template',
             ],
-            'string_if_invalid': '{{ %s }}'
         },
     },
 ]
@@ -125,26 +96,11 @@ WSGI_APPLICATION = 'hmsproj.wsgi.application'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'dbsqlite3hms',
-        'USER': 'dbsqlite3hms_user',
-        'PASSWORD': 'fT3eSbYfdfWnjGpYfhIsS2Sc718qXKxq',
-        'HOST': 'dpg-ctc8j03tq21c73dlv280-a',
-        'PORT': '5432',
-        'OPTIONS': {
-            'sslmode': 'require',
-        }
-    }
-}
-
-# Only use DATABASE_URL if it's set in environment
-if 'DATABASE_URL' in os.environ:
-    DATABASES['default'] = dj_database_url.config(
-        conn_max_age=600,
-        conn_health_checks=True,
-        ssl_require=True,
+    'default': dj_database_url.config(
+        default='postgresql://dbsqlite3hms_user:fT3eSbYfdfWnjGpYfhIsS2Sc718qXKxq@dpg-ctc8j03tq21c73dlv280-a/dbsqlite3hms',
+        conn_max_age=600
     )
+}
 
 
 # Password validation
