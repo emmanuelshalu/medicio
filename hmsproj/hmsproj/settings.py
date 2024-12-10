@@ -13,6 +13,37 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 from pathlib import Path
 import os
 import dj_database_url
+import logging.config
+
+# Configure logging
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'INFO',
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'django.db.backends': {
+            'level': 'INFO',
+            'handlers': ['console'],
+            'propagate': False,
+        },
+    },
+}
+
+# Set this to True temporarily to see detailed error pages
+DEBUG = True
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -96,21 +127,26 @@ WSGI_APPLICATION = 'hmsproj.wsgi.application'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
 DATABASES = {
-    'default': dj_database_url.config(
-        default='postgresql://dbsqlite3hms_user:fT3eSbYfdfWnjGpYfhIsS2Sc718qXKxq@dpg-ctc8j03tq21c73dlv280-a/dbsqlite3hms',
-        conn_max_age=600,
-        conn_health_checks=True,
-        ssl_require=True
-    )
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'dbsqlite3hms',
+        'USER': 'dbsqlite3hms_user',
+        'PASSWORD': 'fT3eSbYfdfWnjGpYfhIsS2Sc718qXKxq',
+        'HOST': 'dpg-ctc8j03tq21c73dlv280-a',
+        'PORT': '5432',
+        'OPTIONS': {
+            'sslmode': 'require',
+        }
+    }
 }
 
-# Add database options separately
-DATABASES['default'].update({
-    'OPTIONS': {
-        'sslmode': 'require',
-        'client_encoding': 'UTF8',
-    }
-})
+# Only use DATABASE_URL if it's set in environment
+if 'DATABASE_URL' in os.environ:
+    DATABASES['default'] = dj_database_url.config(
+        conn_max_age=600,
+        conn_health_checks=True,
+        ssl_require=True,
+    )
 
 
 # Password validation

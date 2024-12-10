@@ -2,20 +2,42 @@
 # exit on error
 set -o errexit
 
+# verbose output
+set -x
+
 echo "Installing dependencies..."
 pip install -r requirements.txt
 
 # Create the staticfiles directory if it doesn't exist
 mkdir -p staticfiles
 
-echo "Resetting migrations..."
-python manage.py migrate hmsapp zero
+echo "Checking database connection..."
+python << END
+import sys
+import psycopg2
+try:
+    conn = psycopg2.connect(
+        dbname="dbsqlite3hms",
+        user="dbsqlite3hms_user",
+        password="fT3eSbYfdfWnjGpYfhIsS2Sc718qXKxq",
+        host="dpg-ctc8j03tq21c73dlv280-a",
+        port="5432"
+    )
+    conn.close()
+    print("Database connection successful!")
+except Exception as e:
+    print(f"Database connection failed: {e}")
+    sys.exit(1)
+END
 
-echo "Making fresh migrations..."
-python manage.py makemigrations hmsapp --noinput
+echo "Making migrations..."
+python manage.py makemigrations --noinput
 
-echo "Running all migrations..."
+echo "Running migrations..."
 python manage.py migrate --noinput
+
+echo "Checking migration status..."
+python manage.py showmigrations
 
 echo "Creating default groups..."
 python manage.py setup_roles
@@ -26,10 +48,15 @@ python manage.py createcachetable
 echo "Collecting static files..."
 python manage.py collectstatic --no-input --clear
 
-# Attempt to load initial data if it exists
-if [ -f "hmsproj/fixtures/initial_data.json" ]; then
-    echo "Loading initial data..."
-    python manage.py loaddata initial_data.json
-fi
+# Create a superuser
+echo "Creating superuser..."
+python manage.py shell << END
+from django.contrib.auth.models import User
+if not User.objects.filter(username='admin').exists():
+    User.objects.create_superuser('admin', 'admin@example.com', 'admin123')
+    print("Superuser created successfully!")
+else:
+    print("Superuser already exists.")
+END
 
 echo "Build completed!"
