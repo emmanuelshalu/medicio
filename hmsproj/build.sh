@@ -5,5 +5,6 @@ set -o errexit
 pip install -r requirements.txt
 
 python manage.py collectstatic --no-input
-python manage.py makemigrations
-python manage.py migrate --noinput
+python manage.py makemigrations hmsapp
+python manage.py migrate hmsapp
+python manage.py migrate
