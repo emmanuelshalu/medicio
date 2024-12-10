@@ -1,20 +1,20 @@
-{% extends 'base.html' %}
+{% extends base_template %}
 {% load static %}
 
 {% block content %}
-<div class="container mt-4">
+<div class="container mt-3">
     <div class="row">
         <div class="col-md-6 offset-md-3">
             <div class="card">
-                <div class="card-header">
-                    <h4>Payment Details</h4>
+                <div class="card-header py-2">
+                    <h4 class="mb-0">Payment Details</h4>
                 </div>
-                <div class="card-body">
-                    <div class="text-center mb-4">
+                <div class="card-body py-2">
+                    <div class="text-center mb-2">
                         <form id="paymentForm" method="post">
                             {% csrf_token %}
-                            <div class="form-group">
-                                <h5>Payment Amount: 
+                            <div class="form-group mb-2">
+                                <h5 class="mb-1">Payment Amount: 
                                     <input type="number" 
                                            id="paymentAmount" 
                                            name="payment_amount" 
@@ -28,46 +28,48 @@
                                 </h5>
                                 <small class="text-muted">Remaining Balance: ₹{{ bill.remaining_amount }}</small>
                             </div>
-                            <button type="submit" class="btn btn-primary">Update Amount</button>
+                            <button type="submit" class="btn btn-primary btn-sm" style="display: inline-block !important;">Update Amount</button>
                         </form>
-                        <p>Bill ID: {{ bill.id }}</p>
-                        <p>Patient: {{ bill.patient.patient_name }}</p>
+                        <p class="mb-1">Bill ID: {{ bill.id }}</p>
+                        <p class="mb-1">Patient: {{ bill.patient.patient_name }}</p>
                     </div>
 
                     <div class="text-center">
                         <img src="data:image/png;base64,{{ qr_code }}" 
                              alt="UPI QR Code" 
-                             class="img-fluid mb-3"
-                             style="max-width: 300px;">
+                             class="img-fluid mb-2"
+                             style="max-width: 250px;">
                         
-                        <p class="mb-3">Scan QR code to pay via UPI</p>
+                        <p class="mb-2">Scan QR code to pay via UPI</p>
                         
-                        <div class="upi-details">
-                            <p><strong>UPI ID:</strong> <span id="upiId">{{ upi_id }}</span>
+                        <div class="upi-details mb-2">
+                            <p class="mb-1"><strong>UPI ID:</strong> <span id="upiId">{{ upi_id }}</span>
                                <button class="btn btn-sm btn-outline-primary ml-2" onclick="copyUpiId()">Copy</button>
                             </p>
                         </div>
                     </div>
 
-                    <div class="alert alert-info mt-3">
-                        <small>
-                            1. Open your UPI app (Google Pay, PhonePe, etc.)<br>
-                            2. Scan the QR code or paste the UPI ID<br>
-                            3. Enter amount: ₹<span id="displayAmount">{{ payment_amount }}</span><br>
-                            4. Complete the payment<br>
-                            5. Keep the transaction ID for reference
-                        </small>
+                    <div class="card mb-2">
+                        <div class="card-body bg-light py-2">
+                            <small>
+                                1. Open your UPI app (Google Pay, PhonePe, etc.)<br>
+                                2. Scan the QR code or paste the UPI ID<br>
+                                3. Enter amount: ₹<span id="displayAmount">{{ payment_amount }}</span><br>
+                                4. Complete the payment<br>
+                                5. Keep the transaction ID for reference
+                            </small>
+                        </div>
                     </div>
 
                     <!-- Payment Verification Form -->
-                    <form method="post" action="{% url 'verify_upi_payment' bill.id %}" class="mt-4">
+                    <form method="post" action="{% url 'verify_upi_payment' bill.id %}" class="mt-2 text-center">
                         {% csrf_token %}
                         <input type="hidden" name="payment_amount" value="{{ payment_amount }}">
-                        <div class="form-group">
-                            <label for="utr">UPI Transaction ID (UTR)</label>
+                        <div class="form-group mb-2">
+                            <label for="utr" class="mb-1">UPI Transaction ID (UTR)</label>
                             <input type="text" class="form-control" id="utr" name="utr" required>
                         </div>
-                        <button type="submit" class="btn btn-primary btn-block">Verify Payment</button>
+                        <button type="submit" class="btn btn-primary">Verify Payment</button>
                     </form>
                 </div>
             </div>

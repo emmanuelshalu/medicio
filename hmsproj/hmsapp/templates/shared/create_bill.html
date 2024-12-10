@@ -1,10 +1,10 @@
-{% extends 'hosp_admin/base_admin.html' %}
+{% extends base_template %}
 {% load static %}
 
 {% block content %}
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
     <h1 class="h2">Create New Bill</h1>
-    <div class="btn-toolbar mb-2 mb-md-0">
+    <div class="btn-toolbar mb-2 mb-md-0 me-5">
         <a href="{% url 'manage_bills' %}" class="btn btn-secondary">
             <i class="bi bi-arrow-left"></i> Back to Bills
         </a>
