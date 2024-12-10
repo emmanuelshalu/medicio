@@ -100,13 +100,17 @@ DATABASES = {
         default='postgresql://dbsqlite3hms_user:fT3eSbYfdfWnjGpYfhIsS2Sc718qXKxq@dpg-ctc8j03tq21c73dlv280-a/dbsqlite3hms',
         conn_max_age=600,
         conn_health_checks=True,
-        ssl_require=True,
-        'OPTIONS': {
-            'sslmode': 'require',
-            'client_encoding': 'UTF8',
-        }
+        ssl_require=True
     )
 }
+
+# Add database options separately
+DATABASES['default'].update({
+    'OPTIONS': {
+        'sslmode': 'require',
+        'client_encoding': 'UTF8',
+    }
+})
 
 
 # Password validation
