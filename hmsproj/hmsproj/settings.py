@@ -37,7 +37,7 @@ SECRET_KEY = 'django-insecure-n&m9bu6xq$v)09wo4@s&+_rzc$2m@ok2rl3394f*v6!6)r4*4%
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = 'RENDER' not in os.environ
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['mediciohms.onrender.com', 'localhost', '127.0.0.1', '*']
 
 # Add Render external hostname
 RENDER_EXTERNAL_HOSTNAME = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
@@ -98,7 +98,9 @@ WSGI_APPLICATION = 'hmsproj.wsgi.application'
 DATABASES = {
     'default': dj_database_url.config(
         default='postgresql://dbsqlite3hms_user:fT3eSbYfdfWnjGpYfhIsS2Sc718qXKxq@dpg-ctc8j03tq21c73dlv280-a/dbsqlite3hms',
-        conn_max_age=600
+        conn_max_age=600,
+        conn_health_checks=True,
+        ssl_require=True
     )
 }
 
