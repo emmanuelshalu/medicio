@@ -97,7 +97,7 @@ WSGI_APPLICATION = 'hmsproj.wsgi.application'
 
 DATABASES = {
     'default': dj_database_url.config(
-        default='postgresql://dbsqlite3hms_user:fT3eSbYfdfWnjGpYfhIsS2Sc718qXKxq@dpg-ctc8j03tq21c73dlv280-a/dbsqlite3hms',
+        default=os.getenv('DATABASE_URL', 'postgresql://postgres:password@localhost:5432/hmsdb'),
         conn_max_age=600
     )
 }
@@ -161,4 +161,6 @@ LOGIN_URL = '/login/'
 HOSPITAL_UPI_ID = 'emmanuel.shalu-1@oksbi'  # Replace with your actual UPI ID
 
 # Update your static files configuration
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+if not DEBUG:
+    STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+    STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'

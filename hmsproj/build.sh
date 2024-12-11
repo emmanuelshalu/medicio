@@ -14,9 +14,6 @@ python manage.py migrate --noinput
 echo "Checking migration status..."
 python manage.py showmigrations
 
-echo "Creating cache table..."
-python manage.py createcachetable
-
 echo "Collecting static files..."
 python manage.py collectstatic --no-input
 
