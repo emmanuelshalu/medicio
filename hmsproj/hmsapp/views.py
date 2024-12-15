@@ -28,6 +28,7 @@ from collections import defaultdict
 import qrcode
 import base64
 from io import BytesIO
+from dateutil.relativedelta import relativedelta
 
 
 
@@ -67,11 +68,19 @@ def home(request):
     }
     return render(request, 'home.html', context)
 
+def calculate_age(dob):
+    """Calculate age from date of birth"""
+    today = date.today()
+    return relativedelta(today, dob).years
+
 def book_appointment(request):
     if request.method == 'POST':
         try:
-            # Get form data
-            patient_name = request.POST.get('patient_name')
+            # Get mandatory form data
+            first_name = request.POST.get('first_name')
+            last_name = request.POST.get('last_name')
+            date_of_birth = request.POST.get('date_of_birth')
+            gender = request.POST.get('gender')
             phone_number = request.POST.get('phone_number')
             doctor_id = request.POST.get('doctor')
             appointment_date = request.POST.get('appointment_date')
@@ -80,33 +89,57 @@ def book_appointment(request):
             notes = request.POST.get('notes', '')
             status = request.POST.get('status', 'SCHEDULED')
 
+            # Validate mandatory fields
+            if not all([first_name, last_name, date_of_birth, gender, phone_number]):
+                messages.error(request, 'Please fill all mandatory fields')
+                return redirect('book_appointment')
+
+            # Convert date_of_birth string to date object
+            dob = datetime.strptime(date_of_birth, '%Y-%m-%d').date()
+            
+            # Calculate age
+            age = calculate_age(dob)
+
             # Create user for patient
             username = f"patient_{phone_number}"
             user, created = User.objects.get_or_create(
                 username=username,
                 defaults={
-                    'first_name': patient_name.split()[0],
-                    'last_name': ' '.join(patient_name.split()[1:]) if len(patient_name.split()) > 1 else ''
+                    'first_name': first_name,
+                    'last_name': last_name
                 }
             )
 
-            # Get or create patient with all required fields
+            # Get or create patient with mandatory fields
+            patient_name = f"{first_name} {last_name}"
             patient, created = Patient.objects.get_or_create(
                 phone_number=phone_number,
                 defaults={
                     'user': user,
                     'patient_name': patient_name,
-                    'date_of_birth': timezone.now().date(),  # Use timezone-aware date
-                    'blood_group': 'O+',  # Default value
-                    'gender': 'OTHER',  # Default value
-                    'nationality': 'Not Specified',  # Default value
-                    'emergency_contact_name': patient_name,  # Using patient name as default
-                    'emergency_contact_phone': phone_number  # Using same phone number as default
+                    'date_of_birth': dob,
+                    'age': age,  # Add calculated age
+                    'gender': gender,
+                    'nationality': 'Not Specified',
+                    'emergency_contact_name': patient_name,
+                    'emergency_contact_phone': phone_number
                 }
             )
 
+            # Update patient information if they already exist
+            if not created:
+                patient.patient_name = patient_name
+                patient.date_of_birth = dob
+                patient.age = age  # Update age
+                patient.gender = gender
+                patient.save()
+
             # Create appointment
-            appointment_datetime = timezone.make_aware(datetime.combine(appointment_date, appointment_time))  # Combine date and time
+            appointment_datetime = timezone.make_aware(datetime.combine(
+                datetime.strptime(appointment_date, '%Y-%m-%d').date(),
+                datetime.strptime(appointment_time, '%H:%M').time()
+            ))
+            
             appointment = Appointment.objects.create(
                 patient=patient,
                 doctor_id=doctor_id,
@@ -121,16 +154,12 @@ def book_appointment(request):
             # Handle medical records file upload
             if 'medical_records' in request.FILES:
                 medical_file = request.FILES['medical_records']
-                
-                # First create MedicalRecord entry
                 medical_record = MedicalRecord.objects.create(
                     patient=patient,
                     record_date=timezone.now().date(),
                     description=f"Medical records uploaded during appointment booking - {reason}",
                     document=medical_file
                 )
-                
-                # Then update appointment with the same file
                 appointment.medical_records = medical_file
                 appointment.save()
 
@@ -138,7 +167,7 @@ def book_appointment(request):
             return redirect('home')
 
         except Exception as e:
-            print(f"Error details: {str(e)}")  # Add this for debugging
+            print(f"Error details: {str(e)}")
             messages.error(request, f'Error booking appointment: {str(e)}')
             return redirect('home')
 
@@ -146,6 +175,9 @@ def book_appointment(request):
     doctors = DoctorProfile.objects.all()
     context = {
         'doctors': doctors,
+        'gender_choices': Patient.GENDER_CHOICES,  # Add gender choices to context
+        'min_date': date(1900, 1, 1).isoformat(),  # Minimum allowed date
+        'max_date': date.today().isoformat(),  # Maximum allowed date (today)
     }
     return render(request, 'shared/manage_appointments.html', context)
 
@@ -379,26 +411,39 @@ def manage_doctors(request):
 @login_required
 @user_passes_test(lambda u: u.groups.filter(name__in=['Staff', 'Administrators', 'Doctors']).exists())
 def manage_patients(request):
-    search = request.GET.get('search', '')
-    min_age = request.GET.get('min_age', None)
-    max_age = request.GET.get('max_age', None)
-    gender = request.GET.get('gender', '')
-
+    # Update ages for all patients
     patients = Patient.objects.all()
+    for patient in patients:
+        if patient.age != patient.calculated_age:
+            patient.save()  # This will trigger the age recalculation
 
-    if search:
-        patients = patients.filter(Q(user__first_name__icontains=search) | Q(user__last_name__icontains=search) | Q(patient_id__icontains=search))
+    # Your existing search logic
+    search_query = request.GET.get('search', '')
+    min_age = request.GET.get('min_age')
+    max_age = request.GET.get('max_age')
+    gender = request.GET.get('gender')
 
+    if search_query:
+        patients = patients.filter(
+            Q(patient_name__icontains=search_query) |
+            Q(patient_id__icontains=search_query)
+        )
+    
+    if gender:
+        patients = patients.filter(gender=gender)
+    
     if min_age:
         patients = patients.filter(age__gte=min_age)
-
+    
     if max_age:
         patients = patients.filter(age__lte=max_age)
 
-    if gender:
-        patients = patients.filter(gender=gender)
-
-    return render(request, 'shared/manage_patients.html', {'patients': patients, 'request': request})
+    context = {
+        'patients': patients,
+        'request': request
+    }
+    
+    return render(request, 'shared/manage_patients.html', context)
 
 @login_required
 @user_passes_test(lambda u: u.groups.filter(name__in=['Staff', 'Administrators', 'Doctors']).exists())
@@ -1511,3 +1556,60 @@ def verify_upi_payment(request, bill_id):
         return redirect('view_bill', bill_id=bill.id)
     
     return redirect('upi_payment', bill_id=bill_id)
+
+@login_required
+@permission_required('hmsapp.add_patient')
+def add_patient(request):
+    if request.method == 'POST':
+        try:
+            # Get form data
+            first_name = request.POST.get('first_name')
+            last_name = request.POST.get('last_name')
+            email = request.POST.get('email')
+            phone_number = request.POST.get('phone_number')
+            date_of_birth = request.POST.get('date_of_birth')
+            gender = request.POST.get('gender')
+            blood_group = request.POST.get('blood_group')
+            nationality = request.POST.get('nationality')
+            address = request.POST.get('address')
+            emergency_contact_name = request.POST.get('emergency_contact_name')
+            emergency_contact_phone = request.POST.get('emergency_contact_phone')
+
+            # Create user account
+            username = f"patient_{phone_number}"
+            user = User.objects.create(
+                username=username,
+                first_name=first_name,
+                last_name=last_name,
+                email=email if email else ''
+            )
+
+            # Create patient profile
+            patient = Patient.objects.create(
+                user=user,
+                patient_name=f"{first_name} {last_name}",
+                phone_number=phone_number,
+                date_of_birth=date_of_birth,
+                gender=gender,
+                blood_group=blood_group,
+                nationality=nationality or 'Not Specified',
+                address=address,
+                emergency_contact_name=emergency_contact_name,
+                emergency_contact_phone=emergency_contact_phone
+            )
+
+            messages.success(request, 'Patient added successfully!')
+            return JsonResponse({
+                'status': 'success',
+                'message': 'Patient added successfully!',
+                'redirect_url': reverse('view_patient', args=[patient.id])
+            })
+
+        except Exception as e:
+            messages.error(request, f'Error adding patient: {str(e)}')
+            return JsonResponse({
+                'status': 'error',
+                'message': f'Error adding patient: {str(e)}'
+            }, status=400)
+
+    return JsonResponse({'status': 'error', 'message': 'Invalid request method'}, status=405)

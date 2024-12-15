@@ -73,7 +73,7 @@
                     <tr>
                         <td>{{ patient.patient_id }}</td>
                         <td>{{ patient.user.get_full_name }}</td>
-                        <td>{{ patient.age }}</td>
+                        <td>{{ patient.calculated_age }}</td>
                         <td>{{ patient.gender }}</td>
                         <td>{{ patient.blood_group }}</td>
                         <td>{{ patient.phone_number }}</td>
@@ -131,18 +131,15 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <form id="addPatientForm" method="POST" action="{% url 'manage_patients' %}" enctype="multipart/form-data">
+                <form id="addPatientForm" method="POST" action="{% url 'add_patient' %}" enctype="multipart/form-data">
                     {% csrf_token %}
                     <div class="row mb-3">
                         <div class="col-md-6">
                             <label for="firstName" class="form-label">First Name *</label>
                             <input type="text" class="form-control" id="firstName" name="first_name" required>
-                            <div class="invalid-feedback">
-                                Please enter first name
-                            </div>
                         </div>
                         <div class="col-md-6">
-                            <label for="lastName" class="form-label">Last Name</label>
+                            <label for="lastName" class="form-label">Last Name *</label>
                             <input type="text" class="form-control" id="lastName" name="last_name" required>
                         </div>
                     </div>
@@ -150,24 +147,26 @@
                     <div class="row mb-3">
                         <div class="col-md-6">
                             <label for="email" class="form-label">Email</label>
-                            <input type="email" class="form-control" id="email" name="email" required>
+                            <input type="email" class="form-control" id="email" name="email">
                         </div>
                         <div class="col-md-6">
-                            <label for="phoneNumber" class="form-label">Phone Number</label>
-                            <input type="tel" class="form-control" id="phoneNumber" name="phone_number" 
-                                   pattern="\+?1?\d{9,15}" 
-                                   title="Phone number must be entered in the format: '+999999999'. Up to 15 digits allowed."
-                                   required>
+                            <label for="phoneNumber" class="form-label">Phone Number *</label>
+                            <input type="tel" class="form-control" id="phoneNumber" name="phone_number" required>
                         </div>
                     </div>
 
                     <div class="row mb-3">
                         <div class="col-md-4">
-                            <label for="age" class="form-label">Age</label>
-                            <input type="number" class="form-control" id="age" name="age" min="0" max="150" required>
+                            <label for="dateOfBirth" class="form-label">Date of Birth *</label>
+                            <input type="date" class="form-control" id="dateOfBirth" name="date_of_birth" 
+                                   required onchange="calculateAge(this.value)">
                         </div>
                         <div class="col-md-4">
-                            <label for="gender" class="form-label">Gender</label>
+                            <label for="calculatedAge" class="form-label">Age</label>
+                            <input type="text" class="form-control" id="calculatedAge" readonly>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="gender" class="form-label">Gender *</label>
                             <select class="form-select" id="gender" name="gender" required>
                                 <option value="">Select Gender</option>
                                 <option value="M">Male</option>
@@ -175,8 +174,11 @@
                                 <option value="O">Other</option>
                             </select>
                         </div>
-                        <div class="col-md-4">
-                            <label for="bloodGroup" class="form-label">Blood Group</label>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="bloodGroup" class="form-label">Blood Group *</label>
                             <select class="form-select" id="bloodGroup" name="blood_group" required>
                                 <option value="">Select Blood Group</option>
                                 <option value="A+">A+</option>
@@ -189,33 +191,35 @@
                                 <option value="O-">O-</option>
                             </select>
                         </div>
+                        <div class="col-md-6">
+                            <label for="nationality" class="form-label">Nationality</label>
+                            <input type="text" class="form-control" id="nationality" name="nationality" value="Indian">
+                        </div>
                     </div>
 
                     <div class="row mb-3">
                         <div class="col-12">
                             <label for="address" class="form-label">Address</label>
-                            <textarea class="form-control" id="address" name="address" rows="3"></textarea>
+                            <textarea class="form-control" id="address" name="address" rows="2"></textarea>
                         </div>
                     </div>
 
                     <div class="row mb-3">
                         <div class="col-md-6">
-                            <label for="profilePicture" class="form-label">Profile Picture</label>
-                            <input type="file" class="form-control" id="profilePicture" name="profile_picture" 
-                                   accept=".jpg,.jpeg,.png">
-                            <small class="text-muted">Allowed formats: JPG, JPEG, PNG</small>
+                            <label for="emergencyContactName" class="form-label">Emergency Contact Name</label>
+                            <input type="text" class="form-control" id="emergencyContactName" name="emergency_contact_name">
                         </div>
                         <div class="col-md-6">
-                            <label for="password" class="form-label">Password</label>
-                            <input type="password" class="form-control" id="password" name="password" required>
-                            <small class="text-muted">Initial password for the patient's account</small>
+                            <label for="emergencyContactPhone" class="form-label">Emergency Contact Phone</label>
+                            <input type="tel" class="form-control" id="emergencyContactPhone" name="emergency_contact_phone">
                         </div>
                     </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary">Add Patient</button>
+                    </div>
                 </form>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                <button type="submit" form="addPatientForm" class="btn btn-primary">Add Patient</button>
             </div>
         </div>
     </div>
@@ -238,27 +242,58 @@
     }
 
     document.getElementById('addPatientForm').addEventListener('submit', function(e) {
-        e.preventDefault();  // Prevent default form submission
+        e.preventDefault();
         
-        // Basic form validation
-        let form = this;
-        let requiredFields = form.querySelectorAll('[required]');
-        let isValid = true;
+        const formData = new FormData(this);
         
-        requiredFields.forEach(field => {
-            if (!field.value) {
-                isValid = false;
-                field.classList.add('is-invalid');
-            } else {
-                field.classList.remove('is-invalid');
+        fetch(this.action, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
             }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                // Show success message
+                alert(data.message);
+                // Redirect if needed
+                if (data.redirect_url) {
+                    window.location.href = data.redirect_url;
+                }
+                // Close modal
+                const modal = bootstrap.Modal.getInstance(document.getElementById('addPatientModal'));
+                modal.hide();
+            } else {
+                // Show error message
+                alert(data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while adding the patient');
         });
+    });
+
+    function calculateAge(birthDate) {
+        const today = new Date();
+        const birth = new Date(birthDate);
+        let age = today.getFullYear() - birth.getFullYear();
+        const monthDiff = today.getMonth() - birth.getMonth();
         
-        if (isValid) {
-            form.submit();  // Submit the form if validation passes
-        } else {
-            alert('Please fill in all required fields');
+        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+            age--;
         }
+        
+        document.getElementById('calculatedAge').value = age;
+    }
+
+    // Set max date as today
+    document.addEventListener('DOMContentLoaded', function() {
+        const dateInput = document.getElementById('dateOfBirth');
+        const today = new Date().toISOString().split('T')[0];
+        dateInput.max = today;
     });
 </script>
 {% endblock %}

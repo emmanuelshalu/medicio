@@ -10,6 +10,7 @@ from hmsapp.utils.google_calendar import get_google_calendar_service, create_cal
 from django.db.models import Count, Avg, Sum, F
 from django.db.models.functions import TruncMonth, TruncYear, ExtractMonth
 from decimal import Decimal
+from dateutil.relativedelta import relativedelta
 
 # Phone number validator
 phone_regex = RegexValidator(
@@ -158,8 +159,17 @@ class Patient(models.Model):
         blank=True,
         validators=[FileExtensionValidator(['jpg', 'jpeg', 'png'])]
     )
+    age = models.IntegerField(null=True, blank=True)
+
+    @property
+    def calculated_age(self):
+        if self.date_of_birth:
+            today = date.today()
+            return relativedelta(today, self.date_of_birth).years
+        return 0
 
     def save(self, *args, **kwargs):
+        self.age = self.calculated_age
         if not self.patient_id:
             last_patient = Patient.objects.all().order_by('id').last()
             if last_patient:
@@ -476,3 +486,8 @@ class Payment(models.Model):
             bill.payment_status = 'PENDING'
         
         bill.save()
+
+def calculate_age(dob):
+    """Calculate age from date of birth"""
+    today = date.today()
+    return relativedelta(today, dob).years

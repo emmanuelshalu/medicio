@@ -17,8 +17,8 @@ urlpatterns = [
     path('get-doctors/<int:specialty_id>/', views.get_doctors, name='get_doctors'),
 
     # Shared URLs
-    path('hosp_admin/doctors/<int:doctor_id>/view/', views.view_doctor, name='view_doctor'),
-    path('hosp_admin/patients/', views.manage_patients, name='manage_patients'),
+    path('doctors/<int:doctor_id>/view/', views.view_doctor, name='view_doctor'),
+    path('patients/', views.manage_patients, name='manage_patients'),
 
     # Doctor URLs
     path('doctor/dashboard/', views.doctor_dashboard, name='doctor_dashboard'),
@@ -27,8 +27,6 @@ urlpatterns = [
     path('doctor/google-calendar/auth/', views.google_calendar_auth, name='google_calendar_auth'),
     path('doctor/google-calendar/callback/', views.google_calendar_callback, name='google_calendar_callback'),
     path('doctor/google-calendar/disconnect/', views.google_calendar_disconnect, name='google_calendar_disconnect'),
-    # path('doctor/patient/<str:patient_id>/', views.view_patient, name='view_patient'),
-    # path('doctor/treatment/<int:appointment_id>/', views.add_treatment, name='add_treatment'),
 
     # Hospital Admin URLs
     path('hosp_admin/dashboard/', views.admin_dashboard, name='admin_dashboard'),
@@ -38,33 +36,33 @@ urlpatterns = [
     path('hosp_admin/doctors/<int:doctor_id>/delete/', views.delete_doctor, name='delete_doctor'),
 
     # path('hosp_admin/patients/add/', views.add_patient, name='add_patient'),
-    path('hosp_admin/patients/<int:patient_id>/view/', views.view_patient, name='view_patient'),
-    path('hosp_admin/patients/<int:patient_id>/edit/', views.edit_patient, name='edit_patient'),
-    path('hosp_admin/patients/<int:patient_id>/delete/', views.delete_patient, name='delete_patient'),
-    path('hosp_admin/appointments/', views.manage_appointments, name='manage_appointments'),
-    path('hosp_admin/appointments/<int:appointment_id>/view/', views.view_appointment, name='view_appointment'),
-    path('hosp_admin/appointments/<int:appointment_id>/edit/', views.edit_appointment, name='edit_appointment'),
-    path('hosp_admin/appointments/<int:appointment_id>/delete/', views.delete_appointment, name='delete_appointment'),
+    path('patients/<int:patient_id>/view/', views.view_patient, name='view_patient'),
+    path('patients/<int:patient_id>/edit/', views.edit_patient, name='edit_patient'),
+    path('patients/<int:patient_id>/delete/', views.delete_patient, name='delete_patient'),
+    path('appointments/', views.manage_appointments, name='manage_appointments'),
+    path('appointments/<int:appointment_id>/view/', views.view_appointment, name='view_appointment'),
+    path('appointments/<int:appointment_id>/edit/', views.edit_appointment, name='edit_appointment'),
+    path('appointments/<int:appointment_id>/delete/', views.delete_appointment, name='delete_appointment'),
     path('hosp_admin/staff/', views.manage_staff, name='manage_staff'),
     path('hosp_admin/staff/<int:staff_id>/view/', views.view_staff, name='view_staff'),
     path('hosp_admin/staff/<int:staff_id>/edit/', views.edit_staff, name='edit_staff'),
     path('hosp_admin/staff/<int:staff_id>/delete/', views.delete_staff, name='delete_staff'),
-    path('hosp_admin/bills/', views.manage_bills, name='manage_bills'),
-    path('hosp_admin/bills/<int:bill_id>/view/', views.view_bill, name='view_bill'),
-    path('hosp_admin/bills/<int:bill_id>/edit/', views.edit_bill, name='edit_bill'),
-    path('hosp_admin/bills/create/', views.create_bill, name='create_bill'),
-    path('hosp_admin/bills/<int:bill_id>/delete/', views.delete_bill, name='delete_bill'),
-    path('hosp_admin/bills/<int:bill_id>/record-payment/', views.record_payment, name='record_payment'),
+    path('bills/', views.manage_bills, name='manage_bills'),
+    path('bills/<int:bill_id>/view/', views.view_bill, name='view_bill'),
+    path('bills/<int:bill_id>/edit/', views.edit_bill, name='edit_bill'),
+    path('bills/create/', views.create_bill, name='create_bill'),
+    path('bills/<int:bill_id>/delete/', views.delete_bill, name='delete_bill'),
+    path('bills/<int:bill_id>/record-payment/', views.record_payment, name='record_payment'),
     path('hosp_admin/user-activities/', views.view_user_activities, name='view_user_activities'),
     path('hosp_admin/login-activities/', views.view_login_activities, name='view_login_activities'),
 
     # Staff URLs
     path('staff/dashboard/', views.staff_dashboard, name='staff_dashboard'),
-    path('staff/treatments/', views.manage_treatments, name='manage_treatments'),
-    path('staff/treatments/add/', views.add_treatment, name='add_treatment'),
-    path('staff/treatments/<int:treatment_id>/edit/', views.edit_treatment, name='edit_treatment'),
-    path('staff/treatments/<int:treatment_id>/delete/', views.delete_treatment, name='delete_treatment'),
-    path('staff/treatments/<int:treatment_id>/view/', views.view_treatment, name='view_treatment'),
+    path('treatments/', views.manage_treatments, name='manage_treatments'),
+    path('treatments/add/', views.add_treatment, name='add_treatment'),
+    path('treatments/<int:treatment_id>/edit/', views.edit_treatment, name='edit_treatment'),
+    path('treatments/<int:treatment_id>/delete/', views.delete_treatment, name='delete_treatment'),
+    path('treatments/<int:treatment_id>/view/', views.view_treatment, name='view_treatment'),
     path('staff/doctors/', views.all_doctors, name='all_doctors'),
 
     # Treatment URLs
@@ -80,6 +78,7 @@ urlpatterns = [
     path('bills/<int:bill_id>/', views.view_bill, name='view_bill'),
     path('bills/<int:bill_id>/upi-payment/', views.upi_payment, name='upi_payment'),
     path('bills/<int:bill_id>/verify-upi-payment/', views.verify_upi_payment, name='verify_upi_payment'),
+    path('add-patient/', views.add_patient, name='add_patient'),
 ] 
 
 # Serve media files in development
