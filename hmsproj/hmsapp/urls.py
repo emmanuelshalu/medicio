@@ -79,6 +79,7 @@ urlpatterns = [
     path('bills/<int:bill_id>/upi-payment/', views.upi_payment, name='upi_payment'),
     path('bills/<int:bill_id>/verify-upi-payment/', views.verify_upi_payment, name='verify_upi_payment'),
     path('add-patient/', views.add_patient, name='add_patient'),
+    path('appointment/<int:appointment_id>/complete/', views.complete_appointment, name='complete_appointment'),
 ] 
 
 # Serve media files in development

@@ -86,7 +86,7 @@
 <script>
     function completeAppointment(appointmentId) {
         if (confirm('Are you sure you want to mark this appointment as completed?')) {
-            // Add completion logic here
+            window.location.href = "{% url 'complete_appointment' 0 %}".replace('0', appointmentId);
         }
     }
 
