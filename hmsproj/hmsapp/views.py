@@ -763,15 +763,23 @@ def edit_patient(request, patient_id):
     
     if request.method == 'POST':
         try:
-            # Update User model fields
-            patient.user.first_name = request.POST.get('first_name')
-            patient.user.last_name = request.POST.get('last_name')
-            patient.user.email = request.POST.get('email')
-            patient.user.save()
+            # Convert string date to datetime.date object
+            date_of_birth = datetime.strptime(
+                request.POST.get('date_of_birth'), 
+                '%Y-%m-%d'
+            ).date()
             
-            # Update Patient fields
-            patient.patient_name = f"{patient.user.first_name} {patient.user.last_name}"
-            patient.date_of_birth = request.POST.get('date_of_birth')
+            # Calculate age
+            today = datetime.now().date()
+            age = relativedelta(today, date_of_birth).years
+            
+            # Validate age (optional)
+            if age < 0:
+                messages.error(request, "Date of birth cannot be in the future")
+                return redirect('edit_patient', patient_id=patient_id)
+            
+            # Update patient data
+            patient.date_of_birth = date_of_birth
             patient.gender = request.POST.get('gender')
             patient.blood_group = request.POST.get('blood_group')
             patient.phone_number = request.POST.get('phone_number')
@@ -789,8 +797,12 @@ def edit_patient(request, patient_id):
             messages.success(request, 'Patient information updated successfully!')
             return redirect('view_patient', patient_id=patient.id)
             
+        except ValueError as e:
+            messages.error(request, f"Error updating patient: Invalid date format")
+            return redirect('edit_patient', patient_id=patient_id)
         except Exception as e:
-            messages.error(request, f'Error updating patient: {str(e)}')
+            messages.error(request, f"Error updating patient: {str(e)}")
+            return redirect('edit_patient', patient_id=patient_id)
 
     context = {
         'patient': patient,
@@ -1269,8 +1281,8 @@ def analytics_dashboard(request):
         ).count() / max((end_date - start_date).days, 1)
     }
     
-    # Get appointment trends
-    appointment_trends = (
+    # Get appointment trends by month
+    appointment_trends = list(
         Appointment.objects.filter(appointment_date__range=[start_date, end_date])
         .annotate(month=TruncMonth('appointment_date'))
         .values('month')
@@ -1278,8 +1290,16 @@ def analytics_dashboard(request):
         .order_by('month')
     )
     
-    # Get revenue trends
-    revenue_trends = (
+    # Format appointment trends for pie chart
+    formatted_appointment_trends = [
+        {
+            'month': item['month'].strftime('%B %Y'),
+            'count': item['count']
+        } for item in appointment_trends
+    ]
+    
+    # Get revenue trends by month
+    revenue_trends = list(
         Bill.objects.filter(created_at__range=[start_date, end_date])
         .annotate(month=TruncMonth('created_at'))
         .values('month')
@@ -1287,15 +1307,27 @@ def analytics_dashboard(request):
         .order_by('month')
     )
     
-    # Get patient demographics
+    # Format revenue trends for pie chart
+    formatted_revenue_trends = [
+        {
+            'month': item['month'].strftime('%B %Y'),
+            'total': float(item['total'] or 0)
+        } for item in revenue_trends
+    ]
+    
+    # Get patient demographics with proper formatting
+    gender_distribution = dict(
+        Patient.objects.values('gender')
+        .annotate(count=Count('id'))
+        .values_list('gender', 'count')
+    )
+    
+    # Format demographics data
     demographics = {
-        'gender_distribution': dict(
-            Patient.objects.values('gender')
-            .annotate(count=Count('id'))
-            .values_list('gender', 'count')
-        ),
-        'age_distribution': get_age_distribution(),
+        'gender_distribution': gender_distribution,
+        'age_distribution': get_age_distribution()
     }
+    
     # Get top performing doctors
     top_doctors = (
         Appointment.objects.filter(appointment_date__range=[start_date, end_date])
@@ -1303,11 +1335,27 @@ def analytics_dashboard(request):
         .annotate(appointment_count=Count('id'))
         .order_by('-appointment_count')[:5]
     )
+
+    # Add debug data
+    print("Debug Data:")
+    print("Appointment Trends:", formatted_appointment_trends)
+    print("Revenue Trends:", formatted_revenue_trends)
+    print("Demographics:", demographics)
+    
+    # Ensure data is not empty
+    if not formatted_appointment_trends:
+        formatted_appointment_trends = [{'month': 'No Data', 'count': 0}]
+    if not formatted_revenue_trends:
+        formatted_revenue_trends = [{'month': 'No Data', 'total': 0}]
+    if not demographics['gender_distribution']:
+        demographics['gender_distribution'] = {'No Data': 0}
+    if not demographics['age_distribution']:
+        demographics['age_distribution'] = {'No Data': 0}
     
     context = {
         'metrics': metrics,
-        'appointment_trends': json.dumps(list(appointment_trends), cls=DjangoJSONEncoder),
-        'revenue_trends': json.dumps(list(revenue_trends), cls=DjangoJSONEncoder),
+        'appointment_trends': formatted_appointment_trends,
+        'revenue_trends': formatted_revenue_trends,
         'demographics': demographics,
         'top_doctors': top_doctors,
         'start_date': start_date.date(),
