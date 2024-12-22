@@ -1600,25 +1600,13 @@ def add_patient(request):
 @user_passes_test(lambda u: u.groups.filter(name__in=['Staff', 'Administrators', 'Doctors']).exists())
 def complete_appointment(request, appointment_id):
     try:
-        appointment = get_object_or_404(Appointment, id=appointment_id)
-        
-        # Update appointment status
+        appointment = Appointment.objects.get(id=appointment_id)
+        # Simply update the status instead of creating a new record
         appointment.status = 'COMPLETED'
         appointment.save()
-        
-        # Only try Google Calendar if doctor has valid credentials
-        if (hasattr(appointment.doctor, 'google_calendar_enabled') and 
-            appointment.doctor.google_calendar_enabled and 
-            appointment.doctor.google_calendar_credentials):
-            try:
-                # Google Calendar logic would go here if needed
-                pass
-            except Exception as e:
-                # Log the error but don't stop the appointment completion
-                print(f"Google Calendar update failed: {str(e)}")
-        
         messages.success(request, 'Appointment marked as completed successfully.')
-        
+    except Appointment.DoesNotExist:
+        messages.error(request, 'Appointment not found.')
     except Exception as e:
         messages.error(request, f'Error completing appointment: {str(e)}')
     
