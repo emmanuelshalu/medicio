@@ -341,79 +341,6 @@
 
       </div>
 
-    </section><!-- /Services Section -->
-
-    <!-- Appointment Section -->
-    <section id="appointment" class="appointment section light-background">
-
-      <!-- Section Title -->
-      <div class="container section-title" data-aos="fade-up">
-        <h2>MAKE AN APPOINTMENT</h2>
-        <p>Schedule your visit with our expert medical team. We offer flexible scheduling options, including same-day appointments for urgent care needs, ensuring you receive timely and professional medical attention</p>
-      </div><!-- End Section Title -->
-
-      <div class="container" data-aos="fade-up" data-aos-delay="100">
-
-        <form id="appointmentForm" action="{% url 'book_appointment' %}" method="post" enctype="multipart/form-data">
-            {% csrf_token %}
-            <div class="row">
-                <div class="col-md-6 form-group">
-                    <input type="text" name="patient_name" class="form-control" id="patient_name" placeholder="Your Name" required>
-                </div>
-                <div class="col-md-6 form-group mt-3 mt-md-0">
-                    <input type="tel" class="form-control" name="phone_number" id="phone_number" placeholder="Your Phone Number" required>
-                </div>
-            </div>
-            <div class="row mt-3">
-                <div class="col-md-6 form-group">
-                    <select name="doctor" id="doctor" class="form-select" required>
-                        <option value="">Select Doctor</option>
-                        {% for doctor in doctors %}
-                        <option value="{{ doctor.id }}">Dr. {{ doctor.user.get_full_name }} ({{ doctor.specialty }})</option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <div class="col-md-6 form-group">
-                    <input type="date" name="appointment_date" class="form-control" id="appointment_date" 
-                           min="{{ today|date:'Y-m-d' }}" required>
-                </div>
-            </div>
-            <div class="row mt-3">
-                <div class="col-md-6 form-group">
-                    <input type="time" name="appointment_time" class="form-control" id="appointment_time" required>
-                </div>
-                <div class="col-md-6 form-group">
-                    <select name="status" class="form-select" id="status">
-                        <option value="SCHEDULED">Scheduled</option>
-                        <option value="WALK_IN">Walk-In</option>
-                    </select>
-                </div>
-            </div>
-            <div class="form-group mt-3">
-                <textarea class="form-control" name="reason" rows="3" placeholder="Reason for Appointment" required></textarea>
-            </div>
-            <div class="form-group mt-3">
-                <label for="medical_records" class="form-label">Previous Medical Records (if any)</label>
-                <input type="file" class="form-control" name="medical_records" id="medical_records" accept="image/*,.pdf">
-            </div>
-            <div class="form-group mt-3">
-                <textarea class="form-control" name="notes" rows="3" placeholder="Additional Notes (Optional)"></textarea>
-            </div>
-            <div class="text-center mt-3">
-                <a href="#" class="appointment-btn scrollto rounded-pill shadow-sm" 
-                   style="background: #1977cc; padding: 12px 35px; transition: all 0.3s ease; color: #000000; font-size: 2em;" 
-                   onmouseover="this.style.background='#166ab5'" 
-                   onmouseout="this.style.background='#1977cc'"
-                   onclick="event.preventDefault(); this.closest('form').submit();">
-                    Make an Appointment
-                </a>
-            </div>
-        </form>
-
-      </div>
-
-    </section><!-- /Appointment Section -->
-
     <!-- Tabs Section -->
     <section id="departments" class="departments section">
 
@@ -804,7 +731,7 @@
               <div class="faq-item">
                 <h3>How do I schedule an appointment with a specialist?</h3>
                 <div class="faq-content">
-                  <p>You can schedule appointments through our online booking system, by calling our appointment desk at (555) 123-4567, or visiting our reception desk. For specialist consultations, you may need a referral from your primary care physician. Emergency cases are handled immediately without prior appointments.</p>
+                  <p>You can schedule appointments by calling our appointment desk at (555) 123-4567, or visiting our reception desk. For specialist consultations, you may need a referral from your primary care physician. Emergency cases are handled immediately without prior appointments.</p>
                 </div>
                 <i class="faq-toggle bi bi-chevron-right"></i>
               </div><!-- End Faq item-->

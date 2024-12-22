@@ -129,39 +129,18 @@
             }
         }
         /* Dark mode styles */
-        body.dark-mode {
-            background-color: #1a1a1a;
-            color: #ffffff;
+        [data-bs-theme="dark"] {
+            color-scheme: dark;
         }
 
-        body.dark-mode .sidebar {
-            background-color: #2d2d2d !important;
+        [data-bs-theme="dark"] body {
+            background-color: #212529;
+            color: #e9ecef;
         }
 
-        body.dark-mode .card {
-            background-color: #2d2d2d;
-            border-color: #404040;
-        }
-
-        body.dark-mode .nav-link {
-            color: #ffffff !important;
-        }
-
-        body.dark-mode .nav-link:hover {
-            background-color: #404040;
-        }
-
-        body.dark-mode .nav-link.active {
-            background-color: #1977cc;
-        }
-
-        body.dark-mode .table {
-            color: #ffffff;
-        }
-
-        body.dark-mode .modal-content {
-            background-color: #2d2d2d;
-            color: #ffffff;
+        [data-bs-theme="dark"] .sidebar {
+            background-color: #2c3034 !important;
+            box-shadow: 0 0 10px rgba(0,0,0,0.3);
         }
 
         /* Theme toggle button styles */

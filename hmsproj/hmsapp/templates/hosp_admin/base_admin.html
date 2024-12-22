@@ -104,92 +104,31 @@
             }
         }
         /* Dark mode styles */
-        body.dark-mode {
-            background-color: #1a1a1a;
-            color: #e0e0e0;
+        [data-bs-theme="dark"] {
+            color-scheme: dark;
         }
 
-        body.dark-mode .sidebar {
-            background-color: #2d2d2d !important;
+        [data-bs-theme="dark"] body {
+            background-color: #212529;
+            color: #e9ecef;
+        }
+
+        [data-bs-theme="dark"] .sidebar {
+            background-color: #2c3034 !important;
             box-shadow: 0 0 10px rgba(0,0,0,0.3);
         }
 
-        body.dark-mode .card,
-        body.dark-mode .modal-content {
-            background-color: #2d2d2d;
-            border-color: #404040;
-            color: #e0e0e0;
+        [data-bs-theme="dark"] .nav-link {
+            color: #e9ecef !important;
         }
 
-        body.dark-mode .nav-link {
-            color: #e0e0e0 !important;
+        [data-bs-theme="dark"] .nav-link:hover {
+            background-color: #343a40;
         }
 
-        body.dark-mode .nav-link:hover {
-            background-color: #404040;
-        }
-
-        body.dark-mode .nav-link.active {
+        [data-bs-theme="dark"] .nav-link.active {
             background-color: #1977cc;
-            color: white !important;
-        }
-
-        body.dark-mode .table {
-            color: #e0e0e0;
-            border-color: #404040;
-        }
-
-        body.dark-mode .table thead th {
-            background-color: #2d2d2d;
-            border-color: #404040;
-        }
-
-        body.dark-mode .table td {
-            border-color: #404040;
-        }
-
-        body.dark-mode .modal-header,
-        body.dark-mode .modal-footer {
-            border-color: #404040;
-        }
-
-        body.dark-mode input,
-        body.dark-mode select,
-        body.dark-mode textarea {
-            background-color: #333 !important;
-            border-color: #404040 !important;
-            color: #e0e0e0 !important;
-        }
-
-        body.dark-mode .form-control:focus {
-            background-color: #404040 !important;
-            color: #e0e0e0 !important;
-            border-color: #1977cc !important;
-        }
-
-        /* DataTables specific dark mode */
-        body.dark-mode .dataTables_wrapper .dataTables_length,
-        body.dark-mode .dataTables_wrapper .dataTables_filter,
-        body.dark-mode .dataTables_wrapper .dataTables_info,
-        body.dark-mode .dataTables_wrapper .dataTables_processing,
-        body.dark-mode .dataTables_wrapper .dataTables_paginate {
-            color: #e0e0e0 !important;
-        }
-
-        body.dark-mode .dataTables_wrapper .dataTables_paginate .paginate_button {
-            color: #e0e0e0 !important;
-        }
-
-        body.dark-mode .dataTables_wrapper .dataTables_paginate .paginate_button.current {
-            background: #1977cc !important;
-            color: white !important;
-            border-color: #1977cc !important;
-        }
-
-        /* Alert modifications for dark mode */
-        body.dark-mode .alert {
-            background-color: #2d2d2d;
-            border-color: #404040;
+            color: #ffffff !important;
         }
 
         /* Theme toggle button styles */
@@ -343,17 +282,16 @@
             const themeToggle = document.getElementById('themeToggle');
             const icon = themeToggle.querySelector('i');
             
-            body.classList.toggle('dark-mode');
-            
-            // Update icon
-            if (body.classList.contains('dark-mode')) {
-                icon.classList.remove('bi-moon-fill');
-                icon.classList.add('bi-sun-fill');
-                localStorage.setItem('theme', 'dark');
-            } else {
+            if (document.documentElement.getAttribute('data-bs-theme') === 'dark') {
+                document.documentElement.setAttribute('data-bs-theme', 'light');
+                localStorage.setItem('theme', 'light');
                 icon.classList.remove('bi-sun-fill');
                 icon.classList.add('bi-moon-fill');
-                localStorage.setItem('theme', 'light');
+            } else {
+                document.documentElement.setAttribute('data-bs-theme', 'dark');
+                localStorage.setItem('theme', 'dark');
+                icon.classList.remove('bi-moon-fill');
+                icon.classList.add('bi-sun-fill');
             }
         }
 
@@ -364,7 +302,7 @@
             const icon = themeToggle.querySelector('i');
             
             if (savedTheme === 'dark') {
-                document.body.classList.add('dark-mode');
+                document.documentElement.setAttribute('data-bs-theme', 'dark');
                 icon.classList.remove('bi-moon-fill');
                 icon.classList.add('bi-sun-fill');
             }
