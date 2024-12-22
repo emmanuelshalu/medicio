@@ -15,9 +15,61 @@
                 {{ patient.medical_history }}
             </div>
             
-            {% if perms.hmsapp.add_treatment %}
-                <a href="{% url 'add_treatment' patient.id %}">Add Treatment</a>
-            {% endif %}
+            <!-- Treatment History Section -->
+            <div class="card mt-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h4>Treatment History</h4>
+                    {% if perms.hmsapp.add_treatment %}
+                        <a href="{% url 'add_treatment' patient.id %}" class="btn btn-primary btn-sm">
+                            <i class="bi bi-plus-circle"></i> Add Treatment
+                        </a>
+                    {% endif %}
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Doctor</th>
+                                    <th>Diagnosis</th>
+                                    <th>Prescriptions</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for treatment in patient.treatment_set.all|dictsortreversed:"created_at" %}
+                                <tr>
+                                    <td>{{ treatment.created_at|date:"M d, Y" }}</td>
+                                    <td>Dr. {{ treatment.doctor.user.get_full_name }}</td>
+                                    <td>{{ treatment.diagnosis|truncatechars:50 }}</td>
+                                    <td>
+                                        {% if treatment.prescription_set.exists %}
+                                            <ul class="list-unstyled mb-0">
+                                                {% for prescription in treatment.prescription_set.all %}
+                                                    <li>{{ prescription.medicine }} - {{ prescription.dosage }}</li>
+                                                {% endfor %}
+                                            </ul>
+                                        {% else %}
+                                            <span class="text-muted">No prescriptions</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'view_treatment' treatment.id %}" class="btn btn-sm btn-info">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="5" class="text-center">No treatment history available.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
         {% endif %}
     {% else %}
         <p>You don't have permission to view this page.</p>

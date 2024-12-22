@@ -22,6 +22,31 @@
 </div>
 {% endif %}
 
+<!-- Add after messages section -->
+<div class="mb-3">
+    <form id="searchForm" method="GET" action="{% url 'manage_appointments' %}">
+        <div class="row">
+            <div class="col-md-3">
+                <input type="text" class="form-control" name="search" placeholder="Search by Patient or Doctor" value="{{ request.GET.search }}">
+            </div>
+            <div class="col-md-2">
+                <input type="date" class="form-control" name="date" value="{{ request.GET.date }}">
+            </div>
+            <div class="col-md-2">
+                <select class="form-select" name="status">
+                    <option value="">Select Status</option>
+                    <option value="SCHEDULED" {% if request.GET.status == 'SCHEDULED' %}selected{% endif %}>Scheduled</option>
+                    <option value="COMPLETED" {% if request.GET.status == 'COMPLETED' %}selected{% endif %}>Completed</option>
+                    <option value="CANCELLED" {% if request.GET.status == 'CANCELLED' %}selected{% endif %}>Cancelled</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary w-100">Search</button>
+            </div>
+        </div>
+    </form>
+</div>
+
 <!-- Appointments Table -->
 <div class="card shadow mb-4">
     <div class="card-body">

@@ -9,6 +9,22 @@
         </a>
     </div>
 
+    <div class="mb-3">
+        <form id="searchForm" method="GET" action="{% url 'manage_treatments' %}">
+            <div class="row">
+                <div class="col-md-3">
+                    <input type="text" class="form-control" name="search" placeholder="Search by Patient or Doctor" value="{{ request.GET.search }}">
+                </div>
+                <div class="col-md-3">
+                    <input type="date" class="form-control" name="date" placeholder="Filter by Date" value="{{ request.GET.date }}">
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary w-100">Search</button>
+                </div>
+            </div>
+        </form>
+    </div>
+
     <div class="card shadow">
         <div class="card-body">
             <div class="table-responsive">

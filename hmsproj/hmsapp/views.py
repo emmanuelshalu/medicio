@@ -361,51 +361,25 @@ class DoctorDashboardView(PermissionRequiredMixin, View):
 @login_required
 @admin_required
 def manage_doctors(request):
-    if request.method == 'POST':
-        try:
-            # Create User account
-            user = User.objects.create_user(
-                username=request.POST['email'],
-                email=request.POST['email'],
-                password=request.POST['password'],
-                first_name=request.POST['first_name'],
-                last_name=request.POST['last_name']
-            )
-            
-            # Create DoctorProfile
-            doctor = DoctorProfile(
-                user=user,
-                specialty_id=request.POST['specialty'],
-                license_number=request.POST['license_number'],
-                phone_number=request.POST['phone_number'],
-                address=request.POST['address']
-            )
-            
-            # Handle profile picture if uploaded
-            if 'profile_picture' in request.FILES:
-                doctor.profile_picture = request.FILES['profile_picture']
-            
-            doctor.save()
-            
-            messages.success(request, 'Doctor added successfully!')
-            return redirect('manage_doctors')
-            
-        except Exception as e:
-            # If there's an error, delete the user if it was created
-            if 'user' in locals():
-                user.delete()
-            messages.error(request, f'Error adding doctor: {str(e)}')
-            return redirect('manage_doctors')
+    search_query = request.GET.get('search', '')
+    specialty = request.GET.get('specialty')
     
-    # For GET requests
     doctors = DoctorProfile.objects.all()
-    specialties = Specialty.objects.all()
+    
+    if search_query:
+        doctors = doctors.filter(
+            Q(user__first_name__icontains=search_query) |
+            Q(user__last_name__icontains=search_query) |
+            Q(license_number__icontains=search_query)
+        )
+    
+    if specialty:
+        doctors = doctors.filter(specialty_id=specialty)
     
     context = {
         'doctors': doctors,
-        'specialties': specialties
+        'specialties': Specialty.objects.all()
     }
-    
     return render(request, 'hosp_admin/manage_doctors.html', context)
 
 @login_required
@@ -448,137 +422,83 @@ def manage_patients(request):
 @login_required
 @user_passes_test(lambda u: u.groups.filter(name__in=['Staff', 'Administrators', 'Doctors']).exists())
 def manage_appointments(request):
-    if request.method == 'POST':
-        try:
-            doctor_id = request.POST.get('doctor')
-            appointment_date = request.POST.get('appointment_date')
-            appointment_time = request.POST.get('appointment_time')
-            
-            # Convert strings to datetime objects
-            appointment_datetime = timezone.make_aware(
-                datetime.strptime(f"{appointment_date} {appointment_time}", "%Y-%m-%d %H:%M")
-            )
-            
-            # Check if appointment is in the past
-            if appointment_datetime < timezone.now():
-                messages.error(request, "Cannot book appointments in the past")
-                return redirect('manage_appointments')
-            
-            # Get doctor's availability
-            doctor = DoctorProfile.objects.get(id=doctor_id)
-            day_of_week = appointment_datetime.weekday()
-            appointment_time = appointment_datetime.time()
-            
-            # Get availability slots for the day
-            availability_slots = get_doctor_availability(doctor, day_of_week)
-            
-            # Check if the appointment time falls within any available slot
-            is_available = any(
-                start_time <= appointment_time <= end_time
-                for start_time, end_time in availability_slots
-            )
-            
-            if not is_available:
-                messages.error(request, "Selected time is outside doctor's availability")
-                return redirect('manage_appointments')
-            
-            # Create the appointment if all checks pass
-            appointment = Appointment.objects.create(
-                patient_id=request.POST.get('patient'),
-                doctor=doctor,
-                appointment_date=appointment_datetime.date(),
-                appointment_time=appointment_datetime.time(),
-                status=request.POST.get('status', 'SCHEDULED'),
-                notes=request.POST.get('notes', ''),
-                phone_number=request.POST.get('phone_number')
-            )
-            
-            messages.success(request, 'Appointment scheduled successfully!')
-            return redirect('manage_appointments')
-            
-        except Exception as e:
-            messages.error(request, f'Error scheduling appointment: {str(e)}')
-            return redirect('manage_appointments')
-
-    # For GET requests
+    search_query = request.GET.get('search', '')
+    date_filter = request.GET.get('date')
+    status_filter = request.GET.get('status')
+    
+    appointments = Appointment.objects.all()
+    
+    if search_query:
+        appointments = appointments.filter(
+            Q(patient__user__first_name__icontains=search_query) |
+            Q(patient__user__last_name__icontains=search_query) |
+            Q(doctor__user__first_name__icontains=search_query) |
+            Q(doctor__user__last_name__icontains=search_query)
+        )
+    
+    if date_filter:
+        appointments = appointments.filter(appointment_date=date_filter)
+    
+    if status_filter:
+        appointments = appointments.filter(status=status_filter)
+    
     context = {
-        'appointments': Appointment.objects.all().order_by('-appointment_date', '-appointment_time'),
+        'appointments': appointments.order_by('appointment_date', 'appointment_time'),
         'doctors': DoctorProfile.objects.all(),
-        'patients': Patient.objects.all(),
-        'today': timezone.now().date()
+        'patients': Patient.objects.all()
     }
     return render(request, 'shared/manage_appointments.html', context)
 
 @login_required
 @admin_required
 def manage_staff(request):
-    if request.method == 'POST':
-        try:
-            # Create User account
-            user = User.objects.create_user(
-                username=request.POST['email'],
-                email=request.POST['email'],
-                password=request.POST['password'],
-                first_name=request.POST['first_name'],
-                last_name=request.POST['last_name']
-            )
-            
-            # Create StaffProfile with correct field names from your model
-            staff = StaffProfile(
-                user=user,
-                department=request.POST['department'],
-                designation=request.POST['role'],  # Using 'role' input for designation
-                phone_number=request.POST['phone_number'],
-                address=request.POST.get('address', '')
-            )
-            
-            if 'profile_picture' in request.FILES:
-                staff.profile_picture = request.FILES['profile_picture']
-            
-            staff.save()
-            messages.success(request, 'Staff member added successfully!')
-            return redirect('manage_staff')
-            
-        except Exception as e:
-            if 'user' in locals():
-                user.delete()
-            messages.error(request, f'Error adding staff member: {str(e)}')
-            return redirect('manage_staff')
+    search_query = request.GET.get('search', '')
     
+    # Base queryset
     staff_members = StaffProfile.objects.all()
-    context = {
-        'staff_members': staff_members
-    }
     
+    # Apply search filter if search_query exists
+    if search_query:
+        staff_members = staff_members.filter(
+            Q(staff_id__icontains=search_query) |
+            Q(user__first_name__icontains=search_query) |
+            Q(user__last_name__icontains=search_query)
+        )
+    
+    context = {
+        'staff_members': staff_members,
+        'search_query': search_query,
+    }
     return render(request, 'hosp_admin/manage_staff.html', context)
 
 @login_required
 @user_passes_test(lambda u: u.groups.filter(name__in=['Staff', 'Administrators']).exists())
 def manage_bills(request):
-    bills = Bill.objects.select_related('patient', 'treatment').all()
+    search_query = request.GET.get('search', '')
+    status_filter = request.GET.get('status')
     
-    # Calculate total payments
-    total_paid = Bill.objects.aggregate(
-        total_payments=Sum('paid_amount')
-    )['total_payments'] or Decimal('0.00')
-
-    # Calculate total pending amount (total amount - paid amount)
-    total_pending = Bill.objects.filter(
+    bills = Bill.objects.select_related('patient', 'treatment')
+    
+    if search_query:
+        bills = bills.filter(
+            Q(patient__user__first_name__icontains=search_query) |
+            Q(patient__user__last_name__icontains=search_query) |
+            Q(bill_number__icontains=search_query)
+        )
+    
+    if status_filter:
+        bills = bills.filter(payment_status=status_filter)
+    
+    # Calculate totals as before
+    total_paid = bills.aggregate(total_payments=Sum('paid_amount'))['total_payments'] or Decimal('0.00')
+    total_pending = bills.filter(
         payment_status__in=['PENDING', 'PARTIALLY_PAID', 'OVERDUE']
     ).aggregate(
         pending_amount=Sum('amount') - Sum('paid_amount')
     )['pending_amount'] or Decimal('0.00')
     
-    # Calculate other statistics
-    total_bills = bills.count()
-    pending_bills = bills.filter(payment_status='PENDING').count()
-    overdue_bills = bills.filter(payment_status='OVERDUE').count()
-
     context = {
-        'bills': bills,
-        'total_bills': total_bills,
-        'pending_bills': pending_bills,
-        'overdue_bills': overdue_bills,
+        'bills': bills.order_by('-created_at'),
         'total_paid': total_paid,
         'total_pending': total_pending,
     }
@@ -947,10 +867,24 @@ def staff_dashboard(request):
 @login_required
 @user_passes_test(lambda u: u.groups.filter(name__in=['Staff', 'Administrators', 'Doctors']).exists())
 def manage_treatments(request):
-    treatments = Treatment.objects.all().order_by('-created_at')
-
+    search_query = request.GET.get('search', '')
+    date_filter = request.GET.get('date')
+    
+    treatments = Treatment.objects.all()
+    
+    if search_query:
+        treatments = treatments.filter(
+            Q(patient__user__first_name__icontains=search_query) |
+            Q(patient__user__last_name__icontains=search_query) |
+            Q(doctor__user__first_name__icontains=search_query) |
+            Q(doctor__user__last_name__icontains=search_query)
+        )
+    
+    if date_filter:
+        treatments = treatments.filter(created_at__date=date_filter)
+    
     context = {
-        'treatments': treatments,
+        'treatments': treatments.order_by('-created_at'),
         'doctors': DoctorProfile.objects.all(),
         'patients': Patient.objects.all()
     }

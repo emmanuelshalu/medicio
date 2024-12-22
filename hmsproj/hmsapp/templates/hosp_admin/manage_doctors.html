@@ -11,6 +11,30 @@
     </div>
 </div>
 
+<!-- Add after messages section -->
+<div class="mb-3">
+    <form id="searchForm" method="GET" action="{% url 'manage_doctors' %}">
+        <div class="row">
+            <div class="col-md-4">
+                <input type="text" class="form-control" name="search" placeholder="Search by Name or Doctor ID" value="{{ request.GET.search }}">
+            </div>
+            <div class="col-md-3">
+                <select class="form-select" name="specialty">
+                    <option value="">Select Specialty</option>
+                    {% for specialty in specialties %}
+                        <option value="{{ specialty.id }}" {% if request.GET.specialty|stringformat:"s" == specialty.id|stringformat:"s" %}selected{% endif %}>
+                            {{ specialty.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary w-100">Search</button>
+            </div>
+        </div>
+    </form>
+</div>
+
 <!-- Doctors Table -->
 <div class="card shadow mb-4">
     <div class="card-body">

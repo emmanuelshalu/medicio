@@ -22,6 +22,20 @@
 </div>
 {% endif %}
 
+<!-- Add after the messages section -->
+<div class="mb-3">
+    <form id="searchForm" method="GET" action="{% url 'manage_staff' %}">
+        <div class="row">
+            <div class="col-md-4">
+                <input type="text" class="form-control" name="search" placeholder="Search by Name or Staff ID" value="{{ request.GET.search }}">
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary w-100">Search</button>
+            </div>
+        </div>
+    </form>
+</div>
+
 <!-- Staff Table -->
 <div class="card shadow mb-4">
     <div class="card-body">
