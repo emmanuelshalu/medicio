@@ -79,6 +79,8 @@ urlpatterns = [
     path('bills/<int:bill_id>/upi-payment/', views.upi_payment, name='upi_payment'),
     path('bills/<int:bill_id>/verify-upi-payment/', views.verify_upi_payment, name='verify_upi_payment'),
     path('add-patient/', views.add_patient, name='add_patient'),
+    path('webhook/lemon-squeezy/', views.lemon_squeezy_webhook, name='lemon_squeezy_webhook'),
+    path('test-store-id/', views.test_get_store_id, name='test_store_id'),
 ] 
 
 # Serve media files in development

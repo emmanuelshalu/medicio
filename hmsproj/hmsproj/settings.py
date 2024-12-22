@@ -12,6 +12,9 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 
 from pathlib import Path
 import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -151,3 +154,10 @@ LOGIN_URL = '/login/'
 
 # Add your hospital's UPI ID
 HOSPITAL_UPI_ID = 'emmanuel.shalu-1@oksbi'  # Replace with your actual UPI ID
+
+# LemonSqueezy settings
+LEMONSQUEEZY_API_KEY = os.getenv('LEMONSQUEEZY_API_KEY')
+LEMONSQUEEZY_API_URL = os.getenv('LEMONSQUEEZY_API_URL')
+LEMON_SQUEEZY_STORE_ID = os.getenv('LEMON_SQUEEZY_STORE_ID')
+LEMON_SQUEEZY_VARIANT_ID = os.getenv('LEMON_SQUEEZY_VARIANT_ID')
+LEMON_SQUEEZY_WEBHOOK_SECRET = os.getenv('LEMON_SQUEEZY_WEBHOOK_SECRET')

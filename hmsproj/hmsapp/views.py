@@ -29,9 +29,15 @@ import qrcode
 import base64
 from io import BytesIO
 from dateutil.relativedelta import relativedelta
+from lemonsqueezy import LemonSqueezy
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_POST
+import hmac
+import hashlib
+import logging
+import os
 
-
-
+logger = logging.getLogger(__name__)
 
 def get_doctor_availability(doctor, day_of_week):
     """
@@ -1531,85 +1537,178 @@ def upi_payment(request, bill_id):
 
 @login_required
 def verify_upi_payment(request, bill_id):
-    """Verify UPI payment and update bill status"""
-    if request.method == 'POST':
-        bill = get_object_or_404(Bill, id=bill_id)
-        utr = request.POST.get('utr')
-        payment_amount = Decimal(request.POST.get('payment_amount', 0))
-        
-        # Validate payment amount
-        if payment_amount <= 0 or payment_amount > bill.remaining_amount:
-            messages.error(request, 'Invalid payment amount')
-            return redirect('upi_payment', bill_id=bill.id)
-        
-        # Create payment record with UTR
-        Payment.objects.create(
-            bill=bill,
-            amount=payment_amount,
-            payment_date=timezone.now().date(),
-            payment_method='UPI',
-            transaction_id=utr,  # Store the UTR
-            notes=f"UPI Payment with UTR: {utr}"
-        )
-        
-        messages.success(request, 'Payment recorded successfully!')
-        return redirect('view_bill', bill_id=bill.id)
-    
-    return redirect('upi_payment', bill_id=bill_id)
-
-@login_required
-@permission_required('hmsapp.add_patient')
-def add_patient(request):
+    """Verify UPI payment and create LemonSqueezy checkout"""
     if request.method == 'POST':
         try:
-            # Get form data
-            first_name = request.POST.get('first_name')
-            last_name = request.POST.get('last_name')
-            email = request.POST.get('email')
-            phone_number = request.POST.get('phone_number')
-            date_of_birth = request.POST.get('date_of_birth')
-            gender = request.POST.get('gender')
-            blood_group = request.POST.get('blood_group')
-            nationality = request.POST.get('nationality')
-            address = request.POST.get('address')
-            emergency_contact_name = request.POST.get('emergency_contact_name')
-            emergency_contact_phone = request.POST.get('emergency_contact_phone')
+            bill = get_object_or_404(Bill, id=bill_id)
+            payment_amount = request.POST.get('payment_amount')
 
-            # Create user account
-            username = f"patient_{phone_number}"
-            user = User.objects.create(
-                username=username,
-                first_name=first_name,
-                last_name=last_name,
-                email=email if email else ''
+            # Initialize LemonSqueezy client
+            client = LemonSqueezy(api_key=settings.LEMONSQUEEZY_API_KEY)
+            
+            # Create checkout session
+            checkout = client.create_checkout(
+                store_id=settings.LEMON_SQUEEZY_STORE_ID,
+                variant_id=settings.LEMON_SQUEEZY_VARIANT_ID,
+                custom_price=int(float(payment_amount) * 100),  # Convert to cents
+                checkout_data={
+                    'custom': {
+                        'bill_id': bill_id,
+                        'user_id': request.user.id,
+                        'payment_amount': payment_amount
+                    }
+                }
             )
 
-            # Create patient profile
-            patient = Patient.objects.create(
-                user=user,
-                patient_name=f"{first_name} {last_name}",
-                phone_number=phone_number,
-                date_of_birth=date_of_birth,
-                gender=gender,
-                blood_group=blood_group,
-                nationality=nationality or 'Not Specified',
-                address=address,
-                emergency_contact_name=emergency_contact_name,
-                emergency_contact_phone=emergency_contact_phone
-            )
-
-            messages.success(request, 'Patient added successfully!')
-            return JsonResponse({
-                'status': 'success',
-                'message': 'Patient added successfully!',
-                'redirect_url': reverse('view_patient', args=[patient.id])
-            })
+            if checkout and 'url' in checkout:
+                return JsonResponse({
+                    'status': 'success',
+                    'checkout_url': checkout['url']
+                })
+            else:
+                return JsonResponse({
+                    'status': 'error',
+                    'message': 'Failed to create checkout session'
+                })
 
         except Exception as e:
-            messages.error(request, f'Error adding patient: {str(e)}')
             return JsonResponse({
                 'status': 'error',
-                'message': f'Error adding patient: {str(e)}'
-            }, status=400)
+                'message': str(e)
+            })
 
+    return JsonResponse({
+        'status': 'error',
+        'message': 'Invalid request method'
+    })
+
+def test_payment(request, bill_id):
+    try:
+        # Initialize Lemon Squeezy client
+        lemon = LemonSqueezy(api_key='eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJhdWQiOiI5NGQ1OWNlZi1kYmI4LTRlYTUtYjE3OC1kMjU0MGZjZDY5MTkiLCJqdGkiOiI1Mzc1Y2EzNjVhNDM2NGI4YmQ2YTk4MmJjOTYyM2YyMzQ4ZTI4ZGExY2Q1NGFjYmVlMDdkZTA5NDY0ZWUyOGM4NDM4MjRjNjBmZTg4ZmM1NSIsImlhdCI6MTczNDM3MDk4MS40ODY3NjQsIm5iZiI6MTczNDM3MDk4MS40ODY3NjYsImV4cCI6MjA0OTkwMzc4MS40NTM4NSwic3ViIjoiMzk5MDY0NyIsInNjb3BlcyI6W119.g-9zULKBVhXvJgiw0nu0CXaREWwa9H3_miHGScMfK2rNCwQYiCCY5FKDngLf-BCIw1eOfunDkfOD-ZsdJ-5VKokHLyZGPkBctit4xpyF6MsHOnPX0qnZPQUiJhd-_lPU2ZOEYWR7Ud3sgNtylIPvLJ278IPsxAdg8MlUNKslSSiE8WyiTZJueqX2nTgc3TR6zwcHRy7VVDXE9WSTLoV4A62rFcmLAT7IgQZVbwYr4pBAkDlW4f30Jiezn1fDAooqWx1jbLQipgMwA9VYm70iklC8Q-rZHu99EPu_EzA9LN7IHi7eA8UgnZ7AiNAZM3vvir5Q1CZ2Dk4iTwF5ZOG6m3nSgDWFO0zfbyheL690qbwDjtkKGXkQhYxus49nHIzXffSInlGmuBnB4Oj59G64pJpy4hVkmxDeOkI2_P4pmakTGb-FVKzNeOVd_EUiMHJHNYXAeK1AuAXcBTnFHU8vPd3F5dey3cl8rVcu6buVWP6lf6KRcfM34oPS5Si2iwAN')
+        # Create a test checkout session
+        checkout = lemon.create_checkout(
+            store_id=settings.LEMON_SQUEEZY_STORE_ID,
+            variant_id=settings.LEMON_SQUEEZY_VARIANT_ID,
+            custom_price=1000,  # $10.00 in cents
+            checkout_data={
+                'custom': {
+                    'bill_id': bill_id,
+                    'user_id': request.user.id
+                }
+            }
+        )
+
+        if checkout and 'url' in checkout:
+            return JsonResponse({
+                'status': 'success',
+                'checkout_url': checkout['url']
+            })
+        else:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'Failed to create checkout session'
+            })
+
+    except Exception as e:
+        return JsonResponse({
+            'status': 'error',
+            'message': str(e)
+        })
+
+def add_patient(request):
+    if request.method == 'POST':
+        # Add your patient creation logic here
+        pass
+    return render(request, 'hmsapp/add_patient.html')
+
+@csrf_exempt
+def lemon_squeezy_webhook(request):
+    """Handle LemonSqueezy webhook events"""
+    if request.method == 'POST':
+        try:
+            payload = json.loads(request.body)
+            event_name = payload.get('meta', {}).get('event_name')
+            
+            # Handle order_created event
+            if event_name == 'order_created':
+                data = payload.get('data', {})
+                custom_data = data.get('attributes', {}).get('custom_data', {})
+                
+                # Get bill and payment details from custom data
+                bill_id = custom_data.get('bill_id')
+                payment_amount = custom_data.get('payment_amount')
+                
+                if bill_id and payment_amount:
+                    bill = get_object_or_404(Bill, id=bill_id)
+                    
+                    # Create payment record
+                    Payment.objects.create(
+                        bill=bill,
+                        amount=payment_amount,
+                        payment_method='LEMONSQUEEZY',
+                        transaction_id=data.get('id'),
+                        status='COMPLETED'
+                    )
+                    
+                    # Update bill status
+                    bill.paid_amount = F('paid_amount') + float(payment_amount)
+                    bill.save()
+                    
+                    if bill.paid_amount >= bill.amount:
+                        bill.payment_status = 'PAID'
+                    else:
+                        bill.payment_status = 'PARTIALLY_PAID'
+                    bill.save()
+            
+            return JsonResponse({'status': 'success'})
+            
+        except Exception as e:
+            return JsonResponse({
+                'status': 'error',
+                'message': str(e)
+            }, status=400)
+    
     return JsonResponse({'status': 'error', 'message': 'Invalid request method'}, status=405)
+
+def test_get_store_id(request):
+    """Test endpoint to get store ID from LemonSqueezy"""
+    try:
+        # Initialize LemonSqueezy client with API key
+        api_key = os.getenv('LEMONSQUEEZY_API_KEY')
+        client = LemonSqueezy(api_key=api_key)
+        
+        # Get stores (this will return a list of your stores)
+        stores = client.list_stores()
+        
+        # Return the first store's ID
+        if stores and len(stores) > 0:
+            store = stores[0]
+            
+            # Debug information
+            print("Store type:", type(store))
+            print("Store representation:", repr(store))
+            print("Store dictionary:", vars(store))
+            
+            # Try to access raw response data
+            return JsonResponse({
+                'status': 'success',
+                'debug_info': {
+                    'store_type': str(type(store)),
+                    'store_dir': dir(store),
+                    'store_dict': vars(store)
+                }
+            }, safe=False)
+        else:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'No stores found'
+            })
+            
+    except Exception as e:
+        print("Error details:", str(e))
+        return JsonResponse({
+            'status': 'error',
+            'message': str(e),
+            'error_type': str(type(e))
+        }, status=400)

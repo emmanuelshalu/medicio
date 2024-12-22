@@ -62,14 +62,10 @@
                     </div>
 
                     <!-- Payment Verification Form -->
-                    <form method="post" action="{% url 'verify_upi_payment' bill.id %}" class="mt-2 text-center">
+                    <form id="verificationForm" method="post" action="{% url 'verify_upi_payment' bill.id %}" class="mt-2 text-center">
                         {% csrf_token %}
                         <input type="hidden" name="payment_amount" value="{{ payment_amount }}">
-                        <div class="form-group mb-2">
-                            <label for="utr" class="mb-1">UPI Transaction ID (UTR)</label>
-                            <input type="text" class="form-control" id="utr" name="utr" required>
-                        </div>
-                        <button type="submit" class="btn btn-primary">Verify Payment</button>
+                        <button type="submit" class="btn btn-primary">Proceed to Payment</button>
                     </form>
                 </div>
             </div>
@@ -88,6 +84,49 @@ function copyUpiId() {
 // Update display amount when input changes
 document.getElementById('paymentAmount').addEventListener('change', function() {
     document.getElementById('displayAmount').textContent = this.value;
+});
+
+document.getElementById('verificationForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    // Show loading state
+    Swal.fire({
+        title: 'Processing...',
+        text: 'Please wait while we redirect you to the payment gateway',
+        allowOutsideClick: false,
+        didOpen: () => {
+            Swal.showLoading();
+        }
+    });
+
+    // Submit form using fetch
+    fetch(this.action, {
+        method: 'POST',
+        body: new FormData(this),
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            // Redirect to Lemon Squeezy checkout
+            window.location.href = data.checkout_url;
+        } else {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: data.message
+            });
+        }
+    })
+    .catch(error => {
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'An error occurred while processing your payment'
+        });
+    });
 });
 </script>
 {% endblock %} 
