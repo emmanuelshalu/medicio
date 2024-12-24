@@ -80,7 +80,7 @@ def book_appointment(request):
             first_name = request.POST.get('first_name')
             last_name = request.POST.get('last_name')
             date_of_birth = request.POST.get('date_of_birth')
-            gender = request.POST.get('gender')
+            gender = request.POST.get('gender_choices')
             phone_number = request.POST.get('phone_number')
             doctor_id = request.POST.get('doctor')
             appointment_date = request.POST.get('appointment_date')
@@ -403,7 +403,8 @@ def manage_patients(request):
             Q(patient_id__icontains=search_query)
         )
     
-    if gender:
+    # Update gender filtering to use the correct values
+    if gender in dict(Patient.GENDER_CHOICES):  # Validate against model choices
         patients = patients.filter(gender=gender)
     
     if min_age:
@@ -414,7 +415,8 @@ def manage_patients(request):
 
     context = {
         'patients': patients,
-        'request': request
+        'request': request,
+        'gender_choices': Patient.GENDER_CHOICES  # Add gender choices to context
     }
     
     return render(request, 'shared/manage_patients.html', context)
@@ -422,18 +424,43 @@ def manage_patients(request):
 @login_required
 @user_passes_test(lambda u: u.groups.filter(name__in=['Staff', 'Administrators', 'Doctors']).exists())
 def manage_appointments(request):
-    search_query = request.GET.get('search', '')
-    date_filter = request.GET.get('date')
-    status_filter = request.GET.get('status')
+    if request.method == 'POST':
+        try:
+            # Handle new appointment creation
+            appointment = Appointment.objects.create(
+                patient_id=request.POST.get('patient'),
+                doctor_id=request.POST.get('doctor'),
+                appointment_date=request.POST.get('appointment_date'),
+                appointment_time=request.POST.get('appointment_time'),
+                notes=request.POST.get('notes', ''),
+                phone_number=request.POST.get('phone_number'),
+                status='SCHEDULED'
+            )
+            
+            # Handle medical records if uploaded
+            if 'medical_records' in request.FILES:
+                appointment.medical_records = request.FILES['medical_records']
+                appointment.save()
+            
+            messages.success(request, 'Appointment scheduled successfully!')
+            return redirect('manage_appointments')
+            
+        except Exception as e:
+            messages.error(request, f'Error scheduling appointment: {str(e)}')
     
+    # Get filters from request
+    search = request.GET.get('search', '')
+    date_filter = request.GET.get('date', '')
+    status_filter = request.GET.get('status', '')
+    
+    # Query appointments
     appointments = Appointment.objects.all()
     
-    if search_query:
+    if search:
         appointments = appointments.filter(
-            Q(patient__user__first_name__icontains=search_query) |
-            Q(patient__user__last_name__icontains=search_query) |
-            Q(doctor__user__first_name__icontains=search_query) |
-            Q(doctor__user__last_name__icontains=search_query)
+            Q(patient__patient_name__icontains=search) |
+            Q(doctor__user__first_name__icontains=search) |
+            Q(doctor__user__last_name__icontains=search)
         )
     
     if date_filter:
@@ -443,10 +470,15 @@ def manage_appointments(request):
         appointments = appointments.filter(status=status_filter)
     
     context = {
-        'appointments': appointments.order_by('appointment_date', 'appointment_time'),
+        'appointments': appointments.order_by('-appointment_date', '-appointment_time'),
         'doctors': DoctorProfile.objects.all(),
-        'patients': Patient.objects.all()
+        'patients': Patient.objects.all(),
+        'today': date.today(),
+        'gender_choices': Patient.GENDER_CHOICES,
+        'min_date': date(1900, 1, 1).isoformat(),
+        'max_date': date.today().isoformat(),
     }
+    
     return render(request, 'shared/manage_appointments.html', context)
 
 @login_required
@@ -1041,7 +1073,7 @@ def find_next_slot(request):
 
     try:
         doctor = DoctorProfile.objects.get(id=doctor_id)
-        current_datetime = timezone.now()
+        current_datetime = timezone.localtime()  # Use localtime instead of now()
         
         # Look for slots in the next 7 days
         for days_ahead in range(7):
@@ -1067,11 +1099,11 @@ def find_next_slot(request):
             # Check each availability slot
             for start_time, end_time in availability_slots:
                 current_time = start_time
-                if check_date == timezone.now().date():
+                if check_date == current_datetime.date():  # Use current_datetime instead of timezone.now()
                     # If it's today, start from current time (rounded up to next slot)
                     current_time = max(
                         current_time,
-                        (timezone.now() + timedelta(minutes=(slot_duration - timezone.now().minute % slot_duration))).time()
+                        (current_datetime + timedelta(minutes=(slot_duration - current_datetime.minute % slot_duration))).time()
                     )
 
                 # Find the first available slot
@@ -1549,7 +1581,7 @@ def add_patient(request):
             last_name = request.POST.get('last_name')
             email = request.POST.get('email')
             phone_number = request.POST.get('phone_number')
-            date_of_birth = request.POST.get('date_of_birth')
+            date_of_birth = datetime.strptime(request.POST.get('date_of_birth'), '%Y-%m-%d').date()
             gender = request.POST.get('gender')
             blood_group = request.POST.get('blood_group')
             nationality = request.POST.get('nationality')
@@ -1557,8 +1589,24 @@ def add_patient(request):
             emergency_contact_name = request.POST.get('emergency_contact_name')
             emergency_contact_phone = request.POST.get('emergency_contact_phone')
 
-            # Create user account
+            # Check if phone number already exists
+            if Patient.objects.filter(phone_number=phone_number).exists():
+                return JsonResponse({
+                    'status': 'error',
+                    'message': f'A patient with phone number {phone_number} already exists.',
+                    'field': 'phone_number'
+                }, status=400)
+
+            # Check if username would be duplicate
             username = f"patient_{phone_number}"
+            if User.objects.filter(username=username).exists():
+                return JsonResponse({
+                    'status': 'error',
+                    'message': f'A patient account with this phone number already exists.',
+                    'field': 'phone_number'
+                }, status=400)
+
+            # Create user account
             user = User.objects.create(
                 username=username,
                 first_name=first_name,
@@ -1587,14 +1635,27 @@ def add_patient(request):
                 'redirect_url': reverse('view_patient', args=[patient.id])
             })
 
-        except Exception as e:
-            messages.error(request, f'Error adding patient: {str(e)}')
+        except ValueError as e:
             return JsonResponse({
                 'status': 'error',
-                'message': f'Error adding patient: {str(e)}'
+                'message': 'Invalid date format: Please use YYYY-MM-DD',
+                'field': 'date_of_birth'
+            }, status=400)
+        except Exception as e:
+            return JsonResponse({
+                'status': 'error',
+                'message': str(e),
+                'field': 'general'
             }, status=400)
 
-    return JsonResponse({'status': 'error', 'message': 'Invalid request method'}, status=405)
+    # For GET requests, render the template with context
+    context = {
+        'gender_choices': Patient.GENDER_CHOICES,
+        'blood_groups': Patient.BLOOD_GROUPS,
+        'min_date': date(1900, 1, 1).isoformat(),
+        'max_date': date.today().isoformat(),
+    }
+    return render(request, 'shared/manage_patients.html', context)
 
 @login_required
 @user_passes_test(lambda u: u.groups.filter(name__in=['Staff', 'Administrators', 'Doctors']).exists())
@@ -1611,3 +1672,28 @@ def complete_appointment(request, appointment_id):
         messages.error(request, f'Error completing appointment: {str(e)}')
     
     return redirect('view_appointment', appointment_id=appointment_id)
+
+@login_required
+def get_patient_details(request, patient_id):
+    try:
+        patient = Patient.objects.get(id=patient_id)
+        return JsonResponse({
+            'status': 'success',
+            'data': {
+                'first_name': patient.user.first_name,
+                'last_name': patient.user.last_name,
+                'date_of_birth': patient.date_of_birth.isoformat(),
+                'gender': patient.gender,  # This should match one of: 'MALE', 'FEMALE', 'OTHER'
+                'phone_number': patient.phone_number,
+                'blood_group': patient.blood_group,
+                'nationality': patient.nationality,
+                'address': patient.address,
+                'emergency_contact_name': patient.emergency_contact_name,
+                'emergency_contact_phone': patient.emergency_contact_phone
+            }
+        })
+    except Patient.DoesNotExist:
+        return JsonResponse({
+            'status': 'error',
+            'message': 'Patient not found'
+        }, status=404)

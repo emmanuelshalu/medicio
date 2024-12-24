@@ -187,6 +187,11 @@
                             </a>
                         </li>
                         <li class="nav-item">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'manage_appointments' %}active{% endif %}" href="{% url 'manage_appointments' %}">
+                                <i class="bi bi-calendar-check"></i> Appointments
+                            </a>
+                        </li>
+                        <li class="nav-item">
                             <a class="nav-link {% if request.resolver_match.url_name == 'manage_staff' %}active{% endif %}" href="{% url 'manage_staff' %}">
                                 <i class="bi bi-person-workspace"></i> Staff
                             </a>

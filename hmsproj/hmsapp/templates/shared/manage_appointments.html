@@ -129,6 +129,18 @@
                 <form id="addAppointmentForm" method="POST" action="{% url 'manage_appointments' %}" enctype="multipart/form-data">
                     {% csrf_token %}
                     <div class="row mb-3">
+                        <div class="col-md-12">
+                            <label for="patient" class="form-label">Patient *</label>
+                            <select class="form-select" id="patient" name="patient" required>
+                                <option value="">Select Patient</option>
+                                {% for patient in patients %}
+                                <option value="{{ patient.id }}">{{ patient.patient_name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
                         <div class="col-md-6">
                             <label for="first_name">First Name *</label>
                             <input type="text" class="form-control" id="first_name" name="first_name" required>
@@ -158,21 +170,9 @@
 
                     <div class="row mb-3">
                         <div class="col-md-6">
-                            <label for="patient" class="form-label">Patient *</label>
-                            <select class="form-select" id="patient" name="patient" required>
-                                <option value="">Select Patient</option>
-                                {% for patient in patients %}
-                                <option value="{{ patient.id }}">{{ patient.patient_name }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <div class="col-md-6">
                             <label for="phone_number" class="form-label">Phone Number *</label>
                             <input type="tel" class="form-control" id="phone_number" name="phone_number" required>
                         </div>
-                    </div>
-
-                    <div class="row mb-3">
                         <div class="col-md-6">
                             <label for="doctor" class="form-label">Doctor *</label>
                             <select class="form-select" id="doctor" name="doctor" required>
@@ -180,16 +180,6 @@
                                 {% for doctor in doctors %}
                                     <option value="{{ doctor.id }}">Dr. {{ doctor.user.first_name }} {{ doctor.user.last_name }}</option>
                                 {% endfor %}
-                            </select>
-                        </div>
-                        <div class="col-md-6">
-                            <label for="status" class="form-label">Status *</label>
-                            <select class="form-select" id="status" name="status" required>
-                                <option value="SCHEDULED">Scheduled</option>
-                                <option value="WALK_IN">Walk-In</option>
-                                <option value="COMPLETED">Completed</option>
-                                <option value="CANCELLED">Cancelled</option>
-                                <option value="NO_SHOW">No Show</option>
                             </select>
                         </div>
                     </div>
@@ -200,6 +190,9 @@
                             <input type="date" class="form-control" id="appointmentDate" name="appointment_date" 
                                    min="{{ today|date:'Y-m-d' }}" required>
                         </div>
+                    </div>
+
+                    <div class="row mb-3">
                         <div class="col-md-5">
                             <label for="appointmentTime" class="form-label">Time *</label>
                             <input type="time" class="form-control" id="appointmentTime" name="appointment_time" required>
@@ -354,6 +347,50 @@
         timeInput.addEventListener('change', checkDoctorAvailability);
         dateInput.addEventListener('change', checkDoctorAvailability);
         doctorSelect.addEventListener('change', checkDoctorAvailability);
+    });
+
+    document.getElementById('patient').addEventListener('change', function() {
+        const patientId = this.value;
+        if (patientId) {
+            fetch(`/get-patient-details/${patientId}/`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        // Populate form fields
+                        document.getElementById('first_name').value = data.data.first_name;
+                        document.getElementById('last_name').value = data.data.last_name;
+                        document.getElementById('date_of_birth').value = data.data.date_of_birth;
+                        document.getElementById('gender').value = data.data.gender;
+                        document.getElementById('phone_number').value = data.data.phone_number;
+                        
+                        // Calculate and set age
+                        calculateAge(data.data.date_of_birth);
+                        
+                        // Disable fields that shouldn't be edited
+                        document.getElementById('first_name').readOnly = true;
+                        document.getElementById('last_name').readOnly = true;
+                        document.getElementById('date_of_birth').readOnly = true;
+                        document.getElementById('gender').disabled = true;
+                        document.getElementById('phone_number').readOnly = true;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error); // Only log to console, no alert
+                });
+        } else {
+            // Clear and enable fields if no patient is selected
+            document.getElementById('first_name').value = '';
+            document.getElementById('last_name').value = '';
+            document.getElementById('date_of_birth').value = '';
+            document.getElementById('gender').value = '';
+            document.getElementById('phone_number').value = '';
+            
+            document.getElementById('first_name').readOnly = false;
+            document.getElementById('last_name').readOnly = false;
+            document.getElementById('date_of_birth').readOnly = false;
+            document.getElementById('gender').disabled = false;
+            document.getElementById('phone_number').readOnly = false;
+        }
     });
 </script>
 {% endblock %}
